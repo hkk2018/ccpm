@@ -1,224 +1,224 @@
-# Agent Coordination
+# 代理協調 (Agent Coordination)
 
-Rules for multiple agents working in parallel within the same epic worktree.
+多個代理在同一個 epic worktree 中並行工作的規則。
 
-## Parallel Execution Principles
+## 並行執行原則 (Parallel Execution Principles)
 
-1. **File-level parallelism** - Agents working on different files never conflict
-2. **Explicit coordination** - When same file needed, coordinate explicitly
-3. **Fail fast** - Surface conflicts immediately, don't try to be clever
-4. **Human resolution** - Conflicts are resolved by humans, not agents
+1.  **檔案級並行 (File-level parallelism)** - 在不同檔案上工作的代理絕不會衝突。
+2.  **明確協調 (Explicit coordination)** - 當需要同一個檔案時，進行明確協調。
+3.  **快速失敗 (Fail fast)** - 立即揭露衝突，不要試圖耍小聰明。
+4.  **人類解決 (Human resolution)** - 衝突由人類解決，而非代理。
 
-## Work Stream Assignment
+## 工作流分配 (Work Stream Assignment)
 
-Each agent is assigned a work stream from the issue analysis:
+每個代理都會從問題分析中被分配一個工作流：
 ```yaml
-# From {issue}-analysis.md
-Stream A: Database Layer
-  Files: src/db/*, migrations/*
-  Agent: backend-specialist
+# 來自 {issue}-analysis.md
+工作流 A: 資料庫層 (Database Layer)
+  檔案: src/db/*, migrations/*
+  代理: 後端專家 (backend-specialist)
 
-Stream B: API Layer
-  Files: src/api/*
-  Agent: api-specialist
+工作流 B: API 層 (API Layer)
+  檔案: src/api/*
+  代理: API 專家 (api-specialist)
 ```
 
-Agents should only modify files in their assigned patterns.
+代理應僅修改其被分配模式中的檔案。
 
-## File Access Coordination
+## 檔案存取協調 (File Access Coordination)
 
-### Check Before Modify
-Before modifying a shared file:
+### 修改前檢查 (Check Before Modify)
+在修改共享檔案之前：
 ```bash
-# Check if file is being modified
+# 檢查檔案是否正在被修改
 git status {file}
 
-# If modified by another agent, wait
+# 如果被另一個代理修改，則等待
 if [[ $(git status --porcelain {file}) ]]; then
-  echo "Waiting for {file} to be available..."
+  echo "正在等待 {file} 變為可用..."
   sleep 30
-  # Retry
+  # 重試
 fi
 ```
 
-### Atomic Commits
-Make commits atomic and focused:
+### 原子性提交 (Atomic Commits)
+使提交保持原子性和專注：
 ```bash
-# Good - Single purpose commit
+# 好的 - 單一目的的提交
 git add src/api/users.ts src/api/users.test.ts
-git commit -m "Issue #1234: Add user CRUD endpoints"
+git commit -m "Issue #1234: 新增使用者 CRUD 端點"
 
-# Bad - Mixed concerns
+# 不好的 - 混合關注點
 git add src/api/* src/db/* src/ui/*
-git commit -m "Issue #1234: Multiple changes"
+git commit -m "Issue #1234: 多項變更"
 ```
 
-## Communication Between Agents
+## 代理之間的溝通 (Communication Between Agents)
 
-### Through Commits
-Agents see each other's work through commits:
+### 透過提交 (Through Commits)
+代理透過提交看到彼此的工作：
 ```bash
-# Agent checks what others have done
+# 代理檢查其他人做了什麼
 git log --oneline -10
 
-# Agent pulls latest changes
+# 代理拉取最新的變更
 git pull origin epic/{name}
 ```
 
-### Through Progress Files
-Each stream maintains progress:
+### 透過進度檔案 (Through Progress Files)
+每個工作流維護進度：
 ```markdown
 # .claude/epics/{epic}/updates/{issue}/stream-A.md
 ---
-stream: Database Layer
-agent: backend-specialist
+stream: 資料庫層 (Database Layer)
+agent: 後端專家 (backend-specialist)
 started: {datetime}
-status: in_progress
+status: 進行中 (in_progress)
 ---
 
-## Completed
-- Created user table schema
-- Added migration files
+## 已完成 (Completed)
+- 建立了使用者資料表結構
+- 新增了遷移檔案
 
-## Working On
-- Adding indexes
+## 進行中 (Working On)
+- 新增索引
 
-## Blocked
-- None
+## 受阻 (Blocked)
+- 無
 ```
 
-### Through Analysis Files
-The analysis file is the contract:
+### 透過分析檔案 (Through Analysis Files)
+分析檔案即是合約：
 ```yaml
-# Agents read this to understand boundaries
+# 代理讀取此檔案以了解邊界
 Stream A:
-  Files: src/db/*  # Agent A only touches these
+  Files: src/db/*  # 代理 A 只接觸這些
 Stream B:
-  Files: src/api/* # Agent B only touches these
+  Files: src/api/* # 代理 B 只接觸這些
 ```
 
-## Handling Conflicts
+## 處理衝突 (Handling Conflicts)
 
-### Conflict Detection
+### 衝突偵測 (Conflict Detection)
 ```bash
-# If commit fails due to conflict
-git commit -m "Issue #1234: Update"
-# Error: conflicts exist
+# 如果提交因衝突而失敗
+git commit -m "Issue #1234: 更新"
+# 錯誤: 存在衝突
 
-# Agent should report and wait
-echo "❌ Conflict detected in {files}"
-echo "Human intervention needed"
+# 代理應報告並等待
+echo "❌ 在 {files} 中偵測到衝突"
+echo "需要人類介入"
 ```
 
-### Conflict Resolution
-Always defer to humans:
-1. Agent detects conflict
-2. Agent reports issue
-3. Agent pauses work
-4. Human resolves
-5. Agent continues
+### 衝突解決 (Conflict Resolution)
+永遠交由人類處理：
+1.  代理偵測到衝突。
+2.  代理報告問題。
+3.  代理暫停工作。
+4.  人類解決。
+5.  代理繼續。
 
-Never attempt automatic merge resolution.
+絕不嘗試自動合併解決。
 
-## Synchronization Points
+## 同步點 (Synchronization Points)
 
-### Natural Sync Points
-- After each commit
-- Before starting new file
-- When switching work streams
-- Every 30 minutes of work
+### 自然同步點 (Natural Sync Points)
+-   每次提交後。
+-   開始新檔案前。
+-   切換工作流時。
+-   每工作 30 分鐘。
 
-### Explicit Sync
+### 明確同步 (Explicit Sync)
 ```bash
-# Pull latest changes
+# 拉取最新變更
 git pull --rebase origin epic/{name}
 
-# If conflicts, stop and report
+# 如果有衝突，停止並報告
 if [[ $? -ne 0 ]]; then
-  echo "❌ Sync failed - human help needed"
+  echo "❌ 同步失敗 - 需要人類協助"
   exit 1
 fi
 ```
 
-## Agent Communication Protocol
+## 代理溝通協議 (Agent Communication Protocol)
 
-### Status Updates
-Agents should update their status regularly:
+### 狀態更新 (Status Updates)
+代理應定期更新其狀態：
 ```bash
-# Update progress file every significant step
-echo "✅ Completed: Database schema" >> stream-A.md
+# 每完成一個重要步驟就更新進度檔案
+echo "✅ 已完成: 資料庫結構" >> stream-A.md
 git add stream-A.md
-git commit -m "Progress: Stream A - schema complete"
+git commit -m "進度: 工作流 A - 結構完成"
 ```
 
-### Coordination Requests
-When agents need to coordinate:
+### 協調請求 (Coordination Requests)
+當代理需要協調時：
 ```markdown
-# In stream-A.md
-## Coordination Needed
-- Need to update src/types/index.ts
-- Will modify after Stream B commits
-- ETA: 10 minutes
+# 在 stream-A.md 中
+## 需要協調 (Coordination Needed)
+- 需要更新 src/types/index.ts
+- 將在工作流 B 提交後進行修改
+- 預計時間 (ETA): 10 分鐘
 ```
 
-## Parallel Commit Strategy
+## 並行提交策略 (Parallel Commit Strategy)
 
-### No Conflicts Possible
-When working on completely different files:
+### 不可能發生衝突時 (No Conflicts Possible)
+當在完全不同的檔案上工作時：
 ```bash
-# These can happen simultaneously
-Agent-A: git commit -m "Issue #1234: Update database"
-Agent-B: git commit -m "Issue #1235: Update UI"
-Agent-C: git commit -m "Issue #1236: Add tests"
+# 這些可以同時發生
+Agent-A: git commit -m "Issue #1234: 更新資料庫"
+Agent-B: git commit -m "Issue #1235: 更新 UI"
+Agent-C: git commit -m "Issue #1236: 新增測試"
 ```
 
-### Sequential When Needed
-When touching shared resources:
+### 需要時循序進行 (Sequential When Needed)
+當接觸共享資源時：
 ```bash
-# Agent A commits first
+# 代理 A 先提交
 git add src/types/index.ts
-git commit -m "Issue #1234: Update type definitions"
+git commit -m "Issue #1234: 更新類型定義"
 
-# Agent B waits, then proceeds
-# (After A's commit)
+# 代理 B 等待，然後繼續
+# (在 A 提交後)
 git pull
 git add src/api/users.ts
-git commit -m "Issue #1235: Use new types"
+git commit -m "Issue #1235: 使用新的類型"
 ```
 
-## Best Practices
+## 最佳實踐 (Best Practices)
 
-1. **Commit early and often** - Smaller commits = fewer conflicts
-2. **Stay in your lane** - Only modify assigned files
-3. **Communicate changes** - Update progress files
-4. **Pull frequently** - Stay synchronized with other agents
-5. **Fail loudly** - Report issues immediately
-6. **Never force** - No `--force` flags ever
+1.  **及早且頻繁地提交 (Commit early and often)** - 較小的提交 = 較少的衝突。
+2.  **待在自己的車道上 (Stay in your lane)** - 只修改分配的檔案。
+3.  **溝通變更 (Communicate changes)** - 更新進度檔案。
+4.  **頻繁拉取 (Pull frequently)** - 與其他代理保持同步。
+5.  **大聲失敗 (Fail loudly)** - 立即報告問題。
+6.  **絕不強制 (Never force)** - 永遠不要使用 `--force` 旗標。
 
-## Common Patterns
+## 常見模式 (Common Patterns)
 
-### Starting Work
+### 開始工作 (Starting Work)
 ```bash
 1. cd ../epic-{name}
 2. git pull
-3. Check {issue}-analysis.md for assignment
-4. Update stream-{X}.md with "started"
-5. Begin work on assigned files
+3. 檢查 {issue}-analysis.md 以了解分配的任務
+4. 用 "started" 更新 stream-{X}.md
+5. 開始在分配的檔案上工作
 ```
 
-### During Work
+### 工作期間 (During Work)
 ```bash
-1. Make changes to assigned files
-2. Commit with clear message
-3. Update progress file
-4. Check for new commits from others
-5. Continue or coordinate as needed
+1. 對分配的檔案進行變更
+2. 用清晰的訊息提交
+3. 更新進度檔案
+4. 檢查來自他人的新提交
+5. 根據需要繼續或協調
 ```
 
-### Completing Work
+### 完成工作 (Completing Work)
 ```bash
-1. Final commit for stream
-2. Update stream-{X}.md with "completed"
-3. Check if other streams need help
-4. Report completion
+1. 對工作流進行最終提交
+2. 用 "completed" 更新 stream-{X}.md
+3. 檢查其他工作流是否需要幫助
+4. 報告完成
 ```

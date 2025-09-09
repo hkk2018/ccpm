@@ -1,60 +1,60 @@
-# Test Execution Rule
+# 測試執行規則
 
-Standard patterns for running tests across all testing commands.
+適用於所有測試命令的標準測試運行模式。
 
-## Core Principles
+## 核心原則 (Core Principles)
 
-1. **Always use test-runner agent** from `.claude/agents/test-runner.md`
-2. **No mocking** - use real services for accurate results
-3. **Verbose output** - capture everything for debugging
-4. **Check test structure first** - before assuming code bugs
+1.  **始終使用 `test-runner` 代理**，定義於 `.claude/agents/test-runner.md`。
+2.  **禁止模擬 (No mocking)** - 使用真實服務以獲得準確結果。
+3.  **詳細輸出 (Verbose output)** - 捕獲所有資訊以便除錯。
+4.  **先檢查測試結構** - 在假設程式碼有錯誤之前。
 
-## Execution Pattern
+## 執行模式 (Execution Pattern)
 
 ```markdown
-Execute tests for: {target}
+為 {target} 執行測試
 
-Requirements:
-- Run with verbose output
-- No mock services
-- Capture full stack traces
-- Analyze test structure if failures occur
+要求:
+- 以詳細模式運行輸出
+- 不使用模擬服務
+- 捕獲完整的堆疊追蹤
+- 如果發生失敗，分析測試結構
 ```
 
-## Output Focus
+## 輸出焦點 (Output Focus)
 
-### Success
-Keep it simple:
+### 成功 (Success)
+保持簡單：
 ```
-✅ All tests passed ({count} tests in {time}s)
+✅ 所有測試通過 ({count} 個測試，耗時 {time}s)
 ```
 
-### Failure
-Focus on what failed:
+### 失敗 (Failure)
+專注於失敗的部分：
 ```
-❌ Test failures: {count}
+❌ 測試失敗: {count}
 
 {test_name} - {file}:{line}
-  Error: {message}
-  Fix: {suggestion}
+  錯誤 (Error): {message}
+  修復建議 (Fix): {suggestion}
 ```
 
-## Common Issues
+## 常見問題 (Common Issues)
 
-- Test not found → Check file path
-- Timeout → Kill process, report incomplete
-- Framework missing → Install dependencies
+-   找不到測試 → 檢查檔案路徑。
+-   超時 → 終止進程，報告未完成。
+-   缺少框架 → 安裝依賴項。
 
-## Cleanup
+## 清理 (Cleanup)
 
-Always clean up after tests:
+測試後務必進行清理：
 ```bash
 pkill -f "jest|mocha|pytest" 2>/dev/null || true
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-- Don't parallelize tests (avoid conflicts)
-- Let each test complete fully
-- Report failures with actionable fixes
-- Focus output on failures, not successes
+-   不要並行化測試（以避免衝突）。
+-   讓每個測試完全完成。
+-   報告失敗時附帶可行的修復建議。
+-   將輸出重點放在失敗上，而不是成功上。

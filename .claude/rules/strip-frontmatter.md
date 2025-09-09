@@ -1,79 +1,79 @@
-# Strip Frontmatter
+# 移除 Frontmatter
 
-Standard approach for removing YAML frontmatter before sending content to GitHub.
+在將內容發送到 GitHub 之前移除 YAML frontmatter 的標準方法。
 
-## The Problem
+## 問題所在 (The Problem)
 
-YAML frontmatter contains internal metadata that should not appear in GitHub issues:
-- status, created, updated fields
-- Internal references and IDs
-- Local file paths
+YAML frontmatter 包含不應出現在 GitHub issue 中的內部元數據：
+-   `status`, `created`, `updated` 欄位
+-   內部參考和 ID
+-   本地檔案路徑
 
-## The Solution
+## 解決方案 (The Solution)
 
-Use sed to strip frontmatter from any markdown file:
+使用 `sed` 從任何 markdown 檔案中移除 frontmatter：
 
 ```bash
-# Strip frontmatter (everything between first two --- lines)
+# 移除 frontmatter（位於前兩個 --- 行之間的所有內容）
 sed '1,/^---$/d; 1,/^---$/d' input.md > output.md
 ```
 
-This removes:
-1. The opening `---` line
-2. All YAML content
-3. The closing `---` line
+這會移除：
+1.  開頭的 `---` 行
+2.  所有的 YAML 內容
+3.  結尾的 `---` 行
 
-## When to Strip Frontmatter
+## 何時移除 Frontmatter (When to Strip Frontmatter)
 
-Always strip frontmatter when:
-- Creating GitHub issues from markdown files
-- Posting file content as comments
-- Displaying content to external users
-- Syncing to any external system
+在以下情況下務必移除 frontmatter：
+-   從 markdown 檔案創建 GitHub issue 時
+-   將檔案內容作為留言發布時
+-   向外部使用者顯示內容時
+-   與任何外部系統同步時
 
-## Examples
+## 範例 (Examples)
 
-### Creating an issue from a file
+### 從檔案創建 issue
 ```bash
-# Bad - includes frontmatter
+# 不好 - 包含 frontmatter
 gh issue create --body-file task.md
 
-# Good - strips frontmatter
+# 好 - 移除了 frontmatter
 sed '1,/^---$/d; 1,/^---$/d' task.md > /tmp/clean.md
 gh issue create --body-file /tmp/clean.md
 ```
 
-### Posting a comment
+### 發布留言
 ```bash
-# Strip frontmatter before posting
+# 發布前移除 frontmatter
 sed '1,/^---$/d; 1,/^---$/d' progress.md > /tmp/comment.md
 gh issue comment 123 --body-file /tmp/comment.md
 ```
 
-### In a loop
+### 在迴圈中
 ```bash
 for file in *.md; do
-  # Strip frontmatter from each file
+  # 從每個檔案中移除 frontmatter
   sed '1,/^---$/d; 1,/^---$/d' "$file" > "/tmp/$(basename $file)"
-  # Use the clean version
+  # 使用乾淨的版本
 done
 ```
 
-## Alternative Approaches
+## 替代方法 (Alternative Approaches)
 
-If sed is not available or you need more control:
+如果 `sed` 不可用或您需要更多控制：
 
 ```bash
-# Using awk
+# 使用 awk
 awk 'BEGIN{fm=0} /^---$/{fm++; next} fm==2{print}' input.md > output.md
 
-# Using grep with line numbers
+# 使用 grep 搭配行號
 grep -n "^---$" input.md | head -2 | tail -1 | cut -d: -f1 | xargs -I {} tail -n +$(({}+1)) input.md
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-- Always test with a sample file first
-- Keep original files intact
-- Use temporary files for cleaned content
-- Some files may not have frontmatter - the command handles this gracefully
+-   務必先用範例檔案進行測試。
+-   保持原始檔案完整。
+-   對清理後的內容使用暫存檔案。
+-   有些檔案可能沒有 frontmatter——此命令能優雅地處理這種情況。

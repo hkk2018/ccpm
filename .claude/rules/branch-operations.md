@@ -1,147 +1,147 @@
-# Branch Operations
+# 分支操作 (Branch Operations)
 
-Git branches enable parallel development by allowing multiple developers to work on the same repository with isolated changes.
+Git 分支允許多個開發者在同一個儲存庫中進行隔離的變更，從而實現並行開發。
 
-## Creating Branches
+## 建立分支 (Creating Branches)
 
-Always create branches from a clean main branch:
+永遠從一個乾淨的 `main` 分支建立新分支：
 ```bash
-# Ensure main is up to date
+# 確保 main 是最新的
 git checkout main
 git pull origin main
 
-# Create branch for epic
+# 為 epic 建立分支
 git checkout -b epic/{name}
 git push -u origin epic/{name}
 ```
 
-The branch will be created and pushed to origin with upstream tracking.
+這樣會建立分支並將其推送到遠端 (origin)，並設定上游追蹤。
 
-## Working in Branches
+## 在分支中工作 (Working in Branches)
 
-### Agent Commits
-- Agents commit directly to the branch
-- Use small, focused commits
-- Commit message format: `Issue #{number}: {description}`
-- Example: `Issue #1234: Add user authentication schema`
+### 代理提交 (Agent Commits)
+-   代理直接向分支提交。
+-   使用小而專注的提交。
+-   提交訊息格式：`Issue #{number}: {description}`
+-   範例：`Issue #1234: 新增使用者認證結構`
 
-### File Operations
+### 檔案操作 (File Operations)
 ```bash
-# Working directory is the current directory
-# (no need to change directories like with worktrees)
+# 工作目錄就是當前目錄
+# (不像 worktrees 那樣需要切換目錄)
 
-# Normal git operations work
+# 可使用正常的 git 操作
 git add {files}
 git commit -m "Issue #{number}: {change}"
 
-# View branch status
+# 查看分支狀態
 git status
 git log --oneline -5
 ```
 
-## Parallel Work in Same Branch
+## 在同一分支中並行工作 (Parallel Work in Same Branch)
 
-Multiple agents can work in the same branch if they coordinate file access:
+如果多個代理協調檔案存取，它們可以在同一個分支中工作：
 ```bash
-# Agent A works on API
+# 代理 A 處理 API
 git add src/api/*
-git commit -m "Issue #1234: Add user endpoints"
+git commit -m "Issue #1234: 新增使用者端點"
 
-# Agent B works on UI (coordinate to avoid conflicts!)
-git pull origin epic/{name}  # Get latest changes
+# 代理 B 處理 UI (需協調以避免衝突！)
+git pull origin epic/{name}  # 獲取最新變更
 git add src/ui/*
-git commit -m "Issue #1235: Add dashboard component"
+git commit -m "Issue #1235: 新增儀表板元件"
 ```
 
-## Merging Branches
+## 合併分支 (Merging Branches)
 
-When epic is complete, merge back to main:
+當 epic 完成後，將其合併回 `main`：
 ```bash
-# From main repository
+# 從主儲存庫
 git checkout main
 git pull origin main
 
-# Merge epic branch
+# 合併 epic 分支
 git merge epic/{name}
 
-# If successful, clean up
+# 如果成功，進行清理
 git branch -d epic/{name}
 git push origin --delete epic/{name}
 ```
 
-## Handling Conflicts
+## 處理衝突 (Handling Conflicts)
 
-If merge conflicts occur:
+如果發生合併衝突：
 ```bash
-# Conflicts will be shown
+# 衝突將會顯示
 git status
 
-# Human resolves conflicts
-# Then continue merge
+# 由人類解決衝突
+# 然後繼續合併
 git add {resolved-files}
 git commit
 ```
 
-## Branch Management
+## 分支管理 (Branch Management)
 
-### List Active Branches
+### 列出活動分支 (List Active Branches)
 ```bash
 git branch -a
 ```
 
-### Remove Stale Branch
+### 移除過時分支 (Remove Stale Branch)
 ```bash
-# Delete local branch
+# 刪除本地分支
 git branch -d epic/{name}
 
-# Delete remote branch
+# 刪除遠端分支
 git push origin --delete epic/{name}
 ```
 
-### Check Branch Status
+### 檢查分支狀態 (Check Branch Status)
 ```bash
-# Current branch info
+# 當前分支資訊
 git branch -v
 
-# Compare with main
+# 與 main 比較
 git log --oneline main..epic/{name}
 ```
 
-## Best Practices
+## 最佳實踐 (Best Practices)
 
-1. **One branch per epic** - Not per issue
-2. **Clean before create** - Always start from updated main
-3. **Commit frequently** - Small commits are easier to merge
-4. **Pull before push** - Get latest changes to avoid conflicts
-5. **Use descriptive branches** - `epic/feature-name` not `feature`
+1.  **每個 epic 一個分支** - 而非每個 issue 一個。
+2.  **建立前保持乾淨** - 永遠從更新的 `main` 開始。
+3.  **頻繁提交** - 小的提交更容易合併。
+4.  **推送前先拉取** - 獲取最新變更以避免衝突。
+5.  **使用描述性的分支名稱** - `epic/feature-name` 而不是 `feature`。
 
-## Common Issues
+## 常見問題 (Common Issues)
 
-### Branch Already Exists
+### 分支已存在 (Branch Already Exists)
 ```bash
-# Delete old branch first
+# 先刪除舊分支
 git branch -D epic/{name}
 git push origin --delete epic/{name}
-# Then create new one
+# 然後再建立新的
 ```
 
-### Cannot Push Branch
+### 無法推送分支 (Cannot Push Branch)
 ```bash
-# Check if branch exists remotely
+# 檢查遠端是否存在該分支
 git ls-remote origin epic/{name}
 
-# Push with upstream
+# 帶上游推送
 git push -u origin epic/{name}
 ```
 
-### Merge Conflicts During Pull
+### 拉取時發生合併衝突 (Merge Conflicts During Pull)
 ```bash
-# Stash changes if needed
+# 如有需要，暫存變更
 git stash
 
-# Pull and rebase
+# 拉取並變基
 git pull --rebase origin epic/{name}
 
-# Restore changes
+# 還原變更
 git stash pop
 ```

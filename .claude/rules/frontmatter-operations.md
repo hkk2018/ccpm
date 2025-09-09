@@ -1,58 +1,58 @@
-# Frontmatter Operations Rule
+# Frontmatter 操作規則
 
-Standard patterns for working with YAML frontmatter in markdown files.
+處理 Markdown 檔案中 YAML frontmatter 的標準模式。
 
-## Reading Frontmatter
+## 讀取 Frontmatter (Reading Frontmatter)
 
-Extract frontmatter from any markdown file:
-1. Look for content between `---` markers at start of file
-2. Parse as YAML
-3. If invalid or missing, use sensible defaults
+從任何 Markdown 檔案中提取 frontmatter：
+1.  尋找檔案開頭 `---` 標記之間的內容。
+2.  將其解析為 YAML。
+3.  如果無效或缺失，使用合理的預設值。
 
-## Updating Frontmatter
+## 更新 Frontmatter (Updating Frontmatter)
 
-When updating existing files:
-1. Preserve all existing fields
-2. Only update specified fields
-3. Always update `updated` field with current datetime (see `/rules/datetime.md`)
+更新現有檔案時：
+1.  保留所有現有欄位。
+2.  僅更新指定的欄位。
+3.  始終使用當前日期時間更新 `updated` 欄位（參見 `/rules/datetime.md`）。
 
-## Standard Fields
+## 標準欄位 (Standard Fields)
 
-### All Files
+### 所有檔案
 ```yaml
 ---
-name: {identifier}
-created: {ISO datetime}      # Never change after creation
-updated: {ISO datetime}      # Update on any modification
+name: {識別碼}
+created: {ISO 日期時間}      # 創建後絕不更改
+updated: {ISO 日期時間}      # 任何修改時更新
 ---
 ```
 
-### Status Values
-- PRDs: `backlog`, `in-progress`, `complete`
-- Epics: `backlog`, `in-progress`, `completed`  
-- Tasks: `open`, `in-progress`, `closed`
+### 狀態值 (Status Values)
+-   PRDs: `backlog`, `in-progress`, `complete`
+-   Epics: `backlog`, `in-progress`, `completed`
+-   Tasks: `open`, `in-progress`, `closed`
 
-### Progress Tracking
+### 進度追蹤 (Progress Tracking)
 ```yaml
-progress: {0-100}%           # For epics
-completion: {0-100}%         # For progress files
+progress: {0-100}%           # 用於 epics
+completion: {0-100}%         # 用於進度檔案
 ```
 
-## Creating New Files
+## 創建新檔案 (Creating New Files)
 
-Always include frontmatter when creating markdown files:
+創建 Markdown 檔案時，務必包含 frontmatter：
 ```yaml
 ---
-name: {from_arguments_or_context}
-status: {initial_status}
-created: {current_datetime}
-updated: {current_datetime}
+name: {來自參數或上下文}
+status: {初始狀態}
+created: {當前日期時間}
+updated: {當前日期時間}
 ---
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-- Never modify `created` field after initial creation
-- Always use real datetime from system (see `/rules/datetime.md`)
-- Validate frontmatter exists before trying to parse
-- Use consistent field names across all files
+-   初次創建後，絕不修改 `created` 欄位。
+-   始終使用來自系統的真實日期時間（參見 `/rules/datetime.md`）。
+-   在嘗試解析之前，驗證 frontmatter 是否存在。
+-   在所有檔案中使用一致的欄位名稱。

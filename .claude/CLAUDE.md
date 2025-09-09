@@ -1,65 +1,57 @@
-# CLAUDE.md
+# CLAUDE.md (繁體中文翻譯)
 
-> Think carefully and implement the most concise solution that changes as little code as possible.
+> 深思熟慮，並實作最簡潔、程式碼變動最少的解決方案。
 
-## USE SUB-AGENTS FOR CONTEXT OPTIMIZATION
+## 使用子代理以優化上下文
 
-### 1. Always use the file-analyzer sub-agent when asked to read files.
-The file-analyzer agent is an expert in extracting and summarizing critical information from files, particularly log files and verbose outputs. It provides concise, actionable summaries that preserve essential information while dramatically reducing context usage.
+### 1. 當被要求讀取檔案時，永遠使用 `file-analyzer` (檔案分析) 子代理。
+`file-analyzer` 代理是從檔案（特別是日誌檔和詳細輸出）中提取和總結關鍵資訊的專家。它能提供簡潔、可操作的摘要，在保留基本資訊的同時，顯著減少上下文的使用量。
 
-### 2. Always use the code-analyzer sub-agent when asked to search code, analyze code, research bugs, or trace logic flow.
+### 2. 當被要求搜尋程式碼、分析程式碼、研究錯誤或追蹤邏輯流程時，永遠使用 `code-analyzer` (程式碼分析) 子代理。
+`code-analyzer` 代理是程式碼分析、邏輯追蹤和漏洞檢測的專家。它能提供簡潔、可操作的摘要，在保留基本資訊的同時，顯著減少上下文的使用量。
 
-The code-analyzer agent is an expert in code analysis, logic tracing, and vulnerability detection. It provides concise, actionable summaries that preserve essential information while dramatically reducing context usage.
+### 3. 當需要運行測試和分析測試結果時，永遠使用 `test-runner` (測試執行) 子代理。
+使用 `test-runner` 代理可確保：
+- 完整的測試輸出被捕獲，以便於除錯。
+- 主要對話保持乾淨和專注。
+- 上下文使用得到優化。
+- 所有問題都被妥善地揭露。
+- 沒有批准對話框中斷工作流程。
 
-### 3. Always use the test-runner sub-agent to run tests and analyze the test results.
+## 工作哲學
 
-Using the test-runner agent ensures:
+### 錯誤處理
+- **快速失敗 (Fail fast)**：對於關鍵設定（如缺少文字模型），立即失敗。
+- **記錄並繼續 (Log and continue)**：對於可選功能（如提取模型），記錄問題但繼續運行。
+- **優雅降級 (Graceful degradation)**：當外部服務不可用時，系統功能應平滑地降級。
+- **友善的用戶訊息 (User-friendly messages)**：通過彈性層提供易於理解的訊息。
 
-- Full test output is captured for debugging
-- Main conversation stays clean and focused
-- Context usage is optimized
-- All issues are properly surfaced
-- No approval dialogs interrupt the workflow
+### 測試
+- 永遠使用 `test-runner` 代理來執行測試。
+- 絕對不要對任何東西使用模擬服務 (mock services)。
+- 在當前測試完成之前，不要進行下一個測試。
+- 如果測試失敗，在決定重構程式碼庫之前，先考慮檢查測試的結構是否正確。
+- 測試應設計得盡可能詳細 (verbose)，以便我們利用它們進行除錯。
 
-## Philosophy
+## 語氣和行為
+- 歡迎批評。當我錯了、弄錯了，或者你認為我可能錯了的時候，請告訴我。
+- 如果有比我正在採取的方法更好的方法，請告訴我。
+- 如果有我似乎不知道的相關標準或慣例，請告訴我。
+- 保持懷疑。
+- 力求簡潔。
+- 簡短的摘要是可以的，但除非我們正在詳細討論計畫，否則不要給出冗長的分析。
+- 不要奉承，也不要讚美，除非我特別徵求你的判斷。
+- 偶爾的寒暄是可以的。
+- 隨時提出問題。如果你對我的意圖有疑問，不要猜測，直接問。
 
-### Error Handling
-
-- **Fail fast** for critical configuration (missing text model)
-- **Log and continue** for optional features (extraction model)
-- **Graceful degradation** when external services unavailable
-- **User-friendly messages** through resilience layer
-
-### Testing
-
-- Always use the test-runner agent to execute tests.
-- Do not use mock services for anything ever.
-- Do not move on to the next test until the current test is complete.
-- If the test fails, consider checking if the test is structured correctly before deciding we need to refactor the codebase.
-- Tests to be verbose so we can use them for debugging.
-
-
-## Tone and Behavior
-
-- Criticism is welcome. Please tell me when I am wrong or mistaken, or even when you think I might be wrong or mistaken.
-- Please tell me if there is a better approach than the one I am taking.
-- Please tell me if there is a relevant standard or convention that I appear to be unaware of.
-- Be skeptical.
-- Be concise.
-- Short summaries are OK, but don't give an extended breakdown unless we are working through the details of a plan.
-- Do not flatter, and do not give compliments unless I am specifically asking for your judgement.
-- Occasional pleasantries are fine.
-- Feel free to ask many questions. If you are in doubt of my intent, don't guess. Ask.
-
-## ABSOLUTE RULES:
-
-- NO PARTIAL IMPLEMENTATION
-- NO SIMPLIFICATION : no "//This is simplified stuff for now, complete implementation would blablabla"
-- NO CODE DUPLICATION : check existing codebase to reuse functions and constants Read files before writing new functions. Use common sense function name to find them easily.
-- NO DEAD CODE : either use or delete from codebase completely
-- IMPLEMENT TEST FOR EVERY FUNCTIONS
-- NO CHEATER TESTS : test must be accurate, reflect real usage and be designed to reveal flaws. No useless tests! Design tests to be verbose so we can use them for debuging.
-- NO INCONSISTENT NAMING - read existing codebase naming patterns.
-- NO OVER-ENGINEERING - Don't add unnecessary abstractions, factory patterns, or middleware when simple functions would work. Don't think "enterprise" when you need "working"
-- NO MIXED CONCERNS - Don't put validation logic inside API handlers, database queries inside UI components, etc. instead of proper separation
-- NO RESOURCE LEAKS - Don't forget to close database connections, clear timeouts, remove event listeners, or clean up file handles
+## 絕對規則：
+- **禁止部分實作 (NO PARTIAL IMPLEMENTATION)**
+- **禁止簡化 (NO SIMPLIFICATION)**：禁止出現類似「//這只是目前的簡化版本，完整實作會...」的註解。
+- **禁止程式碼重複 (NO CODE DUPLICATION)**：檢查現有程式碼庫以重用函式和常數。在編寫新函式之前先讀取檔案。使用合乎常理的函式名稱以便輕鬆找到它們。
+- **禁止無用程式碼 (NO DEAD CODE)**：要麼使用，要麼從程式碼庫中完全刪除。
+- **為每個函式實作測試 (IMPLEMENT TEST FOR EVERY FUNCTIONS)**
+- **禁止欺騙性的測試 (NO CHEATER TESTS)**：測試必須準確，反映真實使用情況，並旨在揭示缺陷。不要寫無用的測試！測試應設計得盡可能詳細，以便我們利用它們進行除錯。
+- **禁止不一致的命名 (NO INCONSISTENT NAMING)**：閱讀現有程式碼庫的命名模式。
+- **禁止過度工程化 (NO OVER-ENGINEERING)**：當簡單的函式就能解決問題時，不要添加不必要的抽象、工廠模式或中介軟體。當你需要的是「能用」時，不要想著「企業級」。
+- **禁止混合關注點 (NO MIXED CONCERNS)**：不要將驗證邏輯放在 API 處理程序中，或將資料庫查詢放在 UI 元件中，等等，應保持適當的分離。
+- **禁止資源洩漏 (NO RESOURCE LEAKS)**：不要忘記關閉資料庫連線、清除計時器、移除事件監聽器或清理檔案句柄。
