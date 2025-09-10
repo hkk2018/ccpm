@@ -2,101 +2,101 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Issue Close
+# 關閉 Issue (Issue Close)
 
-Mark an issue as complete and close it on GitHub.
+將一個 issue 標記為完成並在 GitHub 上關閉它。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:issue-close <issue_number> [completion_notes]
 ```
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Find Local Task File
+### 1. 尋找本地任務檔案
 
-First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming).
-If not found, search for task file with `github:.*issues/$ARGUMENTS` in frontmatter (old naming).
-If not found: "❌ No local task for issue #$ARGUMENTS"
+首先檢查 `.claude/epics/*/$ARGUMENTS.md` 是否存在（新命名方式）。
+如果找不到，則在 frontmatter 中搜索包含 `github:.*issues/$ARGUMENTS` 的任務檔案（舊命名方式）。
+如果找不到：「❌ 找不到 issue #$ARGUMENTS 的本地任務」
 
-### 2. Update Local Status
+### 2. 更新本地狀態
 
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Update task file frontmatter:
+更新任務檔案的 frontmatter：
 ```yaml
 status: closed
 updated: {current_datetime}
 ```
 
-### 3. Update Progress File
+### 3. 更新進度檔案
 
-If progress file exists at `.claude/epics/{epic}/updates/$ARGUMENTS/progress.md`:
-- Set completion: 100%
-- Add completion note with timestamp
-- Update last_sync with current datetime
+如果進度檔案存在於 `.claude/epics/{epic}/updates/$ARGUMENTS/progress.md`：
+-   設定完成度：100%
+-   新增帶有時間戳的完成註記
+-   使用當前日期時間更新 `last_sync`
 
-### 4. Close on GitHub
+### 4. 在 GitHub 上關閉
 
-Add completion comment and close:
+新增完成評論並關閉：
 ```bash
-# Add final comment
-echo "✅ Task completed
+# 新增最終評論
+echo "✅ 任務完成
 
 $ARGUMENTS
 
 ---
-Closed at: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
+關閉於: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
 
-# Close the issue
+# 關閉 issue
 gh issue close $ARGUMENTS
 ```
 
-### 5. Update Epic Task List on GitHub
+### 5. 在 GitHub 上更新 Epic 任務列表
 
-Check the task checkbox in the epic issue:
+在 epic issue 中勾選任務核取方塊：
 
 ```bash
-# Get epic name from local task file path
+# 從本地任務檔案路徑獲取 epic 名稱
 epic_name={extract_from_path}
 
-# Get epic issue number from epic.md
+# 從 epic.md 獲取 epic issue 編號
 epic_issue=$(grep 'github:' .claude/epics/$epic_name/epic.md | grep -oE '[0-9]+$')
 
 if [ ! -z "$epic_issue" ]; then
-  # Get current epic body
+  # 獲取當前的 epic 內容
   gh issue view $epic_issue --json body -q .body > /tmp/epic-body.md
   
-  # Check off this task
+  # 勾選此任務
   sed -i "s/- \[ \] #$ARGUMENTS/- [x] #$ARGUMENTS/" /tmp/epic-body.md
   
-  # Update epic issue
+  # 更新 epic issue
   gh issue edit $epic_issue --body-file /tmp/epic-body.md
   
-  echo "✓ Updated epic progress on GitHub"
+  echo "✓ 已在 GitHub 上更新 epic 進度"
 fi
 ```
 
-### 6. Update Epic Progress
+### 6. 更新 Epic 進度
 
-- Count total tasks in epic
-- Count closed tasks
-- Calculate new progress percentage
-- Update epic.md frontmatter progress field
+-   計算 epic 中的總任務數
+-   計算已關閉的任務數
+-   計算新的進度百分比
+-   更新 epic.md frontmatter 的 progress 欄位
 
-### 7. Output
+### 7. 輸出
 
 ```
-✅ Closed issue #$ARGUMENTS
-  Local: Task marked complete
-  GitHub: Issue closed & epic updated
-  Epic progress: {new_progress}% ({closed}/{total} tasks complete)
+✅ 已關閉 issue #$ARGUMENTS
+  本地：任務已標記為完成
+  GitHub：Issue 已關閉 & epic 已更新
+  Epic 進度：{new_progress}% ({closed}/{total} 個任務已完成)
   
-Next: Run /pm:next for next priority task
+下一步：運行 /pm:next 查看下一個優先任務
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-Follow `/rules/frontmatter-operations.md` for updates.
-Follow `/rules/github-operations.md` for GitHub commands.
-Always sync local state before GitHub.
+-   遵循 `/rules/frontmatter-operations.md` 進行更新。
+-   遵循 `/rules/github-operations.md` 執行 GitHub 命令。
+-   始終在操作 GitHub 之前同步本地狀態。

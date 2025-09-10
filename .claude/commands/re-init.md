@@ -2,8 +2,8 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Enhance CLAUDE.md file
+# 增強 CLAUDE.md 檔案
 
-Please update CLAUDE.md with the rules from .claude/CLAUDE.md.
+請使用 `.claude/CLAUDE.md` 中的規則來更新 `CLAUDE.md`。
 
-If CLAUDE.md does not exist, create it using the /init and include rules from .claude/CLAUDE.md.
+如果 `CLAUDE.md` 不存在，請使用 `/init` 命令創建它，並包含 `.claude/CLAUDE.md` 中的規則。

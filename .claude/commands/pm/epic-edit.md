@@ -2,65 +2,65 @@
 allowed-tools: Read, Write, LS
 ---
 
-# Epic Edit
+# 編輯 Epic (Epic Edit)
 
-Edit epic details after creation.
+在創建後編輯 epic 的詳細資訊。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:epic-edit <epic_name>
 ```
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Read Current Epic
+### 1. 讀取目前的 Epic
 
-Read `.claude/epics/$ARGUMENTS/epic.md`:
-- Parse frontmatter
-- Read content sections
+讀取 `.claude/epics/$ARGUMENTS/epic.md`：
+-   解析 frontmatter
+-   讀取內容區塊
 
-### 2. Interactive Edit
+### 2. 互動式編輯
 
-Ask user what to edit:
-- Name/Title
-- Description/Overview
-- Architecture decisions
-- Technical approach
-- Dependencies
-- Success criteria
+詢問使用者要編輯什麼：
+-   名稱/標題
+-   描述/概覽
+-   架構決策
+-   技術方法
+-   依賴項
+-   成功標準
 
-### 3. Update Epic File
+### 3. 更新 Epic 檔案
 
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Update epic.md:
-- Preserve all frontmatter except `updated`
-- Apply user's edits to content
-- Update `updated` field with current datetime
+更新 epic.md：
+-   保留除了 `updated` 之外的所有 frontmatter
+-   將使用者的編輯應用到內容中
+-   使用當前日期時間更新 `updated` 欄位
 
-### 4. Option to Update GitHub
+### 4. 更新 GitHub 的選項
 
-If epic has GitHub URL in frontmatter:
-Ask: "Update GitHub issue? (yes/no)"
+如果 epic 的 frontmatter 中有 GitHub URL：
+詢問：「是否更新 GitHub issue？(是/否)」
 
-If yes:
+如果是：
 ```bash
 gh issue edit {issue_number} --body-file .claude/epics/$ARGUMENTS/epic.md
 ```
 
-### 5. Output
+### 5. 輸出
 
 ```
-✅ Updated epic: $ARGUMENTS
-  Changes made to: {sections_edited}
+✅ 已更新 epic: $ARGUMENTS
+  變更的區塊: {sections_edited}
   
-{If GitHub updated}: GitHub issue updated ✅
+{如果 GitHub 已更新}: GitHub issue 已更新 ✅
 
-View epic: /pm:epic-show $ARGUMENTS
+查看 epic: /pm:epic-show $ARGUMENTS
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-Preserve frontmatter history (created, github URL, etc.).
-Don't change task files when editing epic.
-Follow `/rules/frontmatter-operations.md`.
+-   保留 frontmatter 的歷史記錄（created、github URL 等）。
+-   編輯 epic 時不要更改任務檔案。
+-   遵循 `/rules/frontmatter-operations.md`。

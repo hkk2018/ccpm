@@ -2,25 +2,25 @@
 allowed-tools: Bash, Read, Write
 ---
 
-# Test Reference Update
+# 測試參考更新 (Test Reference Update)
 
-Test the task reference update logic used in epic-sync.
+測試 epic-sync 中使用的任務參考更新邏輯。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:test-reference-update
 ```
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Create Test Files
+### 1. 創建測試檔案
 
-Create test task files with references:
+創建帶有參考的測試任務檔案：
 ```bash
 mkdir -p /tmp/test-refs
 cd /tmp/test-refs
 
-# Create task 001
+# 創建任務 001
 cat > 001.md << 'EOF'
 ---
 name: Task One
@@ -33,7 +33,7 @@ conflicts_with: [002, 003]
 This is task 001.
 EOF
 
-# Create task 002
+# 創建任務 002
 cat > 002.md << 'EOF'
 ---
 name: Task Two
@@ -46,7 +46,7 @@ conflicts_with: [003]
 This is task 002, depends on 001.
 EOF
 
-# Create task 003
+# 創建任務 003
 cat > 003.md << 'EOF'
 ---
 name: Task Three
@@ -60,18 +60,18 @@ This is task 003, depends on 001 and 002.
 EOF
 ```
 
-### 2. Create Mappings
+### 2. 創建映射
 
-Simulate the issue creation mappings:
+模擬 issue 創建映射：
 ```bash
-# Simulate task -> issue number mapping
+# 模擬 任務 -> issue 編號 映射
 cat > /tmp/task-mapping.txt << 'EOF'
 001.md:42
 002.md:43
 003.md:44
 EOF
 
-# Create old -> new ID mapping
+# 創建 舊 -> 新 ID 映射
 > /tmp/id-mapping.txt
 while IFS=: read -r task_file task_number; do
   old_num=$(basename "$task_file" .md)
@@ -82,53 +82,53 @@ echo "ID Mapping:"
 cat /tmp/id-mapping.txt
 ```
 
-### 3. Update References
+### 3. 更新參考
 
-Process each file and update references:
+處理每個檔案並更新參考：
 ```bash
 while IFS=: read -r task_file task_number; do
-  echo "Processing: $task_file -> $task_number.md"
+  echo "正在處理: $task_file -> $task_number.md"
   
-  # Read the file content
+  # 讀取檔案內容
   content=$(cat "$task_file")
   
-  # Update references
+  # 更新參考
   while IFS=: read -r old_num new_num; do
     content=$(echo "$content" | sed "s/\b$old_num\b/$new_num/g")
   done < /tmp/id-mapping.txt
   
-  # Write to new file
+  # 寫入新檔案
   new_name="${task_number}.md"
   echo "$content" > "$new_name"
   
-  echo "Updated content preview:"
+  echo "更新內容預覽:"
   grep -E "depends_on:|conflicts_with:" "$new_name"
   echo "---"
 done < /tmp/task-mapping.txt
 ```
 
-### 4. Verify Results
+### 4. 驗證結果
 
-Check that references were updated correctly:
+檢查參考是否已正確更新：
 ```bash
-echo "=== Final Results ==="
+echo "=== 最終結果 ==="
 for file in 42.md 43.md 44.md; do
-  echo "File: $file"
+  echo "檔案: $file"
   grep -E "name:|depends_on:|conflicts_with:" "$file"
   echo ""
 done
 ```
 
-Expected output:
-- 42.md should have conflicts_with: [43, 44]
-- 43.md should have depends_on: [42] and conflicts_with: [44]
-- 44.md should have depends_on: [42, 43]
+預期輸出：
+-   42.md 應有 conflicts_with: [43, 44]
+-   43.md 應有 depends_on: [42] 和 conflicts_with: [44]
+-   44.md 應有 depends_on: [42, 43]
 
-### 5. Cleanup
+### 5. 清理
 
 ```bash
 cd -
 rm -rf /tmp/test-refs
 rm -f /tmp/task-mapping.txt /tmp/id-mapping.txt
-echo "✅ Test complete and cleaned up"
+echo "✅ 測試完成並已清理"
 ```

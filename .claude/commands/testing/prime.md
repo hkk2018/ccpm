@@ -2,62 +2,62 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Prime Testing Environment
+# 準備測試環境 (Prime Testing Environment)
 
-This command prepares the testing environment by detecting the test framework, validating dependencies, and configuring the test-runner agent for optimal test execution.
+此命令透過偵測測試框架、驗證依賴項以及設定測試執行代理，來準備測試環境以實現最佳的測試執行。
 
-## Preflight Checklist
+## 飛行前檢查清單
 
-Before proceeding, complete these validation steps.
-Do not bother the user with preflight checks progress ("I'm not going to ..."). Just do them and move on.
+在繼續之前，請完成這些驗證步驟。
+不要用飛行前檢查的進度來打擾使用者（例如說「我將不會...」）。只需執行它們然後繼續。
 
-### 1. Test Framework Detection
+### 1. 測試框架偵測
 
 **JavaScript/Node.js:**
-- Check package.json for test scripts: `grep -E '"test"|"spec"|"jest"|"mocha"' package.json 2>/dev/null`
-- Look for test config files: `ls -la jest.config.* mocha.opts .mocharc.* 2>/dev/null`
-- Check for test directories: `find . -type d \( -name "test" -o -name "tests" -o -name "__tests__" -o -name "spec" \) -maxdepth 3 2>/dev/null`
+-   檢查 package.json 中的測試腳本：`grep -E '"test"|"spec"|"jest"|"mocha"' package.json 2>/dev/null`
+-   尋找測試設定檔：`ls -la jest.config.* mocha.opts .mocharc.* 2>/dev/null`
+-   檢查測試目錄：`find . -type d \( -name "test" -o -name "tests" -o -name "__tests__" -o -name "spec" \) -maxdepth 3 2>/dev/null`
 
 **Python:**
-- Check for pytest: `find . -name "pytest.ini" -o -name "conftest.py" -o -name "setup.cfg" 2>/dev/null | head -5`
-- Check for unittest: `find . -path "*/test*.py" -o -path "*/test_*.py" 2>/dev/null | head -5`
-- Check requirements: `grep -E "pytest|unittest|nose" requirements.txt 2>/dev/null`
+-   檢查 pytest：`find . -name "pytest.ini" -o -name "conftest.py" -o -name "setup.cfg" 2>/dev/null | head -5`
+-   檢查 unittest：`find . -path "*/test*.py" -o -path "*/test_*.py" 2>/dev/null | head -5`
+-   檢查依賴項：`grep -E "pytest|unittest|nose" requirements.txt 2>/dev/null`
 
 **Rust:**
-- Check for Cargo tests: `grep -E '\[dev-dependencies\]' Cargo.toml 2>/dev/null`
-- Look for test modules: `find . -name "*.rs" -exec grep -l "#\[cfg(test)\]" {} \; 2>/dev/null | head -5`
+-   檢查 Cargo 測試：`grep -E '\[dev-dependencies\]' Cargo.toml 2>/dev/null`
+-   尋找測試模組：`find . -name "*.rs" -exec grep -l "#\[cfg(test)\]" {} \; 2>/dev/null | head -5`
 
 **Go:**
-- Check for test files: `find . -name "*_test.go" 2>/dev/null | head -5`
-- Check go.mod exists: `test -f go.mod && echo "Go module found"`
+-   檢查測試檔案：`find . -name "*_test.go" 2>/dev/null | head -5`
+-   檢查 go.mod 是否存在：`test -f go.mod && echo "Go module found"`
 
-**Other Languages:**
-- Ruby: Check for RSpec: `find . -name ".rspec" -o -name "spec_helper.rb" 2>/dev/null`
-- Java: Check for JUnit: `find . -name "pom.xml" -exec grep -l "junit" {} \; 2>/dev/null`
+**其他語言：**
+-   Ruby: 檢查 RSpec：`find . -name ".rspec" -o -name "spec_helper.rb" 2>/dev/null`
+-   Java: 檢查 JUnit：`find . -name "pom.xml" -exec grep -l "junit" {} \; 2>/dev/null`
 
-### 2. Test Environment Validation
+### 2. 測試環境驗證
 
-If no test framework detected:
-- Tell user: "⚠️ No test framework detected. Please specify your testing setup."
-- Ask: "What test command should I use? (e.g., npm test, pytest, cargo test)"
-- Store response for future use
+如果未偵測到測試框架：
+-   告知使用者：「⚠️ 未偵測到測試框架。請指定您的測試設定。」
+-   詢問：「我應該使用哪個測試命令？(例如，npm test, pytest, cargo test)」
+-   儲存回應以供將來使用
 
-### 3. Dependency Check
+### 3. 依賴項檢查
 
-**For detected framework:**
-- Node.js: Run `npm list --depth=0 2>/dev/null | grep -E "jest|mocha|chai|jasmine"`
-- Python: Run `pip list 2>/dev/null | grep -E "pytest|unittest|nose"`
-- Verify test dependencies are installed
+**對於偵測到的框架：**
+-   Node.js: 運行 `npm list --depth=0 2>/dev/null | grep -E "jest|mocha|chai|jasmine"`
+-   Python: 運行 `pip list 2>/dev/null | grep -E "pytest|unittest|nose"`
+-   驗證測試依賴項是否已安裝
 
-If dependencies missing:
-- Tell user: "❌ Test dependencies not installed"
-- Suggest: "Run: npm install (or pip install -r requirements.txt)"
+如果缺少依賴項：
+-   告知使用者：「❌ 未安裝測試依賴項」
+-   建議：「運行：npm install (或 pip install -r requirements.txt)」
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Framework-Specific Configuration
+### 1. 特定框架的設定
 
-Based on detected framework, create test configuration:
+根據偵測到的框架創建測試設定：
 
 #### JavaScript/Node.js (Jest)
 ```yaml
@@ -125,173 +125,173 @@ options:
 environment: {}
 ```
 
-### 2. Test Discovery
+### 2. 測試探索
 
-Scan for test files:
-- Count total test files found
-- Identify test naming patterns used
-- Note any test utilities or helpers
-- Check for test fixtures or data
+掃描測試檔案：
+-   計算找到的總測試檔案數
+-   識別使用的測試命名模式
+-   注意任何測試工具程式或輔助程式
+-   檢查測試固件或資料
 
 ```bash
-# Example for Node.js
+# Node.js 範例
 find . -path "*/node_modules" -prune -o -name "*.test.js" -o -name "*.spec.js" | wc -l
 ```
 
-### 3. Create Test Runner Configuration
+### 3. 創建測試執行器設定
 
-Create `.claude/testing-config.md` with discovered information:
+使用探索到的資訊創建 `.claude/testing-config.md`：
 
 ```markdown
 ---
 framework: {detected_framework}
 test_command: {detected_command}
-created: [Use REAL datetime from: date -u +"%Y-%m-%dT%H:%M:%SZ"]
+created: [使用來自: date -u +"%Y-%m-%dT%H:%M:%SZ" 的真實日期時間]
 ---
 
-# Testing Configuration
+# 測試設定 (Testing Configuration)
 
-## Framework
-- Type: {framework_name}
-- Version: {framework_version}
-- Config File: {config_file_path}
+## 框架 (Framework)
+- 類型 (Type): {framework_name}
+- 版本 (Version): {framework_version}
+- 設定檔 (Config File): {config_file_path}
 
-## Test Structure
-- Test Directory: {test_dir}
-- Test Files: {count} files found
-- Naming Pattern: {pattern}
+## 測試結構 (Test Structure)
+- 測試目錄 (Test Directory): {test_dir}
+- 測試檔案 (Test Files): 找到 {count} 個檔案
+- 命名模式 (Naming Pattern): {pattern}
 
-## Commands
-- Run All Tests: `{full_test_command}`
-- Run Specific Test: `{specific_test_command}`
-- Run with Debugging: `{debug_command}`
+## 命令 (Commands)
+- 運行所有測試 (Run All Tests): `{full_test_command}`
+- 運行特定測試 (Run Specific Test): `{specific_test_command}`
+- 使用除錯模式運行 (Run with Debugging): `{debug_command}`
 
-## Environment
-- Required ENV vars: {list}
-- Test Database: {if applicable}
-- Test Servers: {if applicable}
+## 環境 (Environment)
+- 必要的環境變數 (Required ENV vars): {list}
+- 測試資料庫 (Test Database): {if applicable}
+- 測試伺服器 (Test Servers): {if applicable}
 
-## Test Runner Agent Configuration
-- Use verbose output for debugging
-- Run tests sequentially (no parallel)
-- Capture full stack traces
-- No mocking - use real implementations
-- Wait for each test to complete
+## 測試執行代理設定 (Test Runner Agent Configuration)
+- 使用詳細輸出以便除錯
+- 循序運行測試（非並行）
+- 捕獲完整的堆疊追蹤
+- 不模擬 - 使用真實的實作
+- 等待每個測試完全完成
 ```
 
-### 4. Configure Test-Runner Agent
+### 4. 設定測試執行代理
 
-Prepare agent context based on framework:
+根據框架準備代理上下文：
 
 ```markdown
-# Test-Runner Agent Configuration
+# 測試執行代理設定 (Test-Runner Agent Configuration)
 
-## Project Testing Setup
-- Framework: {framework}
-- Test Location: {directories}
-- Total Tests: {count}
-- Last Run: Never
+## 專案測試設定 (Project Testing Setup)
+- 框架 (Framework): {framework}
+- 測試位置 (Test Location): {directories}
+- 總測試數 (Total Tests): {count}
+- 上次運行 (Last Run): 從未
 
-## Execution Rules
-1. Always use the test-runner agent from `.claude/agents/test-runner.md`
-2. Run with maximum verbosity for debugging
-3. No mock services - use real implementations
-4. Execute tests sequentially - no parallel execution
-5. Capture complete output including stack traces
-6. If test fails, analyze test structure before assuming code issue
-7. Report detailed failure analysis with context
+## 執行規則 (Execution Rules)
+1. 始終使用 `.claude/agents/test-runner.md` 中的測試執行代理
+2. 以最大詳細程度運行以進行除錯
+3. 不模擬服務 - 使用真實的實作
+4. 循序執行測試 - 非並行執行
+5. 捕獲包括堆疊追蹤在內的完整輸出
+6. 如果測試失敗，在假設程式碼問題之前分析測試結構
+7. 報告帶有上下文的詳細失敗分析
 
-## Test Command Templates
-- Full Suite: `{full_command}`
-- Single File: `{single_file_command}`
-- Pattern Match: `{pattern_command}`
-- Watch Mode: `{watch_command}` (if available)
+## 測試命令範本 (Test Command Templates)
+- 完整套件 (Full Suite): `{full_command}`
+- 單一檔案 (Single File): `{single_file_command}`
+- 模式匹配 (Pattern Match): `{pattern_command}`
+- 觀察模式 (Watch Mode): `{watch_command}` (如果可用)
 
-## Common Issues to Check
-- Environment variables properly set
-- Test database/services running
-- Dependencies installed
-- Proper file permissions
-- Clean test state between runs
+## 要檢查的常見問題 (Common Issues to Check)
+- 環境變數是否已正確設定
+- 測試資料庫/服務是否正在運行
+- 依賴項是否已安裝
+- 適當的檔案權限
+- 運行之間是否清理了測試狀態
 ```
 
-### 5. Validation Steps
+### 5. 驗證步驟
 
-After configuration:
-- Try running a simple test to validate setup
-- Check if test command works: `{test_command} --version` or equivalent
-- Verify test files are discoverable
-- Ensure no permission issues
+設定後：
+-   嘗試運行一個簡單的測試以驗證設定
+-   檢查測試命令是否有效：`{test_command} --version` 或等效命令
+-   驗證測試檔案是否可被發現
+-   確保沒有權限問題
 
-### 6. Output Summary
+### 6. 輸出摘要
 
 ```
-🧪 Testing Environment Primed
+🧪 測試環境已準備就緒
 
-🔍 Detection Results:
-  ✅ Framework: {framework_name} {version}
-  ✅ Test Files: {count} files in {directories}
-  ✅ Config: {config_file}
-  ✅ Dependencies: All installed
+🔍 偵測結果：
+  ✅ 框架 (Framework): {framework_name} {version}
+  ✅ 測試檔案 (Test Files): 在 {directories} 中找到 {count} 個檔案
+  ✅ 設定檔 (Config): {config_file}
+  ✅ 依賴項 (Dependencies): 全部已安裝
 
-📋 Test Structure:
-  - Pattern: {test_file_pattern}
-  - Directories: {test_directories}
-  - Utilities: {test_helpers}
+📋 測試結構：
+  - 模式 (Pattern): {test_file_pattern}
+  - 目錄 (Directories): {test_directories}
+  - 工具程式 (Utilities): {test_helpers}
 
-🤖 Agent Configuration:
-  ✅ Test-runner agent configured
-  ✅ Verbose output enabled
-  ✅ Sequential execution set
-  ✅ Real services (no mocks)
+🤖 代理設定：
+  ✅ 測試執行代理已設定
+  ✅ 詳細輸出已啟用
+  ✅ 循序執行已設定
+  ✅ 真實服務 (無模擬)
 
-⚡ Ready Commands:
-  - Run all tests: /testing:run
-  - Run specific: /testing:run {test_file}
-  - Run pattern: /testing:run {pattern}
+⚡ 就緒的命令：
+  - 運行所有測試: /testing:run
+  - 運行特定測試: /testing:run {test_file}
+  - 運行模式匹配: /testing:run {pattern}
 
-💡 Tips:
-  - Always run tests with verbose output
-  - Check test structure if tests fail
-  - Use real services, not mocks
-  - Let each test complete fully
+💡 提示：
+  - 始終以詳細輸出運行測試
+  - 如果測試失敗，請檢查測試結構
+  - 使用真實服務，而非模擬
+  - 讓每個測試完全完成
 ```
 
-### 7. Error Handling
+### 7. 錯誤處理
 
-**Common Issues:**
+**常見問題：**
 
-**No Framework Detected:**
-- Message: "⚠️ No test framework found"
-- Solution: "Please specify test command manually"
-- Store user's response for future use
+**未偵測到框架：**
+-   訊息：「⚠️ 找不到測試框架」
+-   解決方案：「請手動指定測試命令」
+-   儲存使用者的回應以供將來使用
 
-**Missing Dependencies:**
-- Message: "❌ Test framework not installed"
-- Solution: "Install dependencies first: npm install / pip install -r requirements.txt"
+**缺少依賴項：**
+-   訊息：「❌ 未安裝測試框架」
+-   解決方案：「請先安裝依賴項：npm install / pip install -r requirements.txt」
 
-**No Test Files:**
-- Message: "⚠️ No test files found"
-- Solution: "Create tests first or check test directory location"
+**無測試檔案：**
+-   訊息：「⚠️ 找不到測試檔案」
+-   解決方案：「請先創建測試或檢查測試目錄位置」
 
-**Permission Issues:**
-- Message: "❌ Cannot access test files"
-- Solution: "Check file permissions"
+**權限問題：**
+-   訊息：「❌ 無法存取測試檔案」
+-   解決方案：「請檢查檔案權限」
 
-### 8. Save Configuration
+### 8. 儲存設定
 
-If successful, save configuration for future sessions:
-- Store in `.claude/testing-config.md`
-- Include all discovered settings
-- Update on subsequent runs if changes detected
+如果成功，為將來的會話儲存設定：
+-   儲存在 `.claude/testing-config.md`
+-   包含所有探索到的設定
+-   如果後續運行偵測到變更，則更新
 
-## Important Notes
+## 重要筆記
 
-- **Always detect** rather than assume test framework
-- **Validate dependencies** before claiming ready
-- **Configure for debugging** - verbose output is critical
-- **No mocking** - use real services for accurate testing
-- **Sequential execution** - avoid parallel test issues
-- **Store configuration** for consistent future runs
+-   **始終偵測**而非假設測試框架
+-   在聲稱準備就緒之前**驗證依賴項**
+-   **為除錯進行設定** - 詳細輸出至關重要
+-   **不模擬** - 使用真實服務進行準確測試
+-   **循序執行** - 避免並行測試問題
+-   **儲存設定**以供將來一致的運行
 
 $ARGUMENTS

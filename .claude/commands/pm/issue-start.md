@@ -2,76 +2,76 @@
 allowed-tools: Bash, Read, Write, LS, Task
 ---
 
-# Issue Start
+# 開始 Issue (Issue Start)
 
-Begin work on a GitHub issue with parallel agents based on work stream analysis.
+根據工作流分析，使用並行代理開始處理一個 GitHub issue。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:issue-start <issue_number>
 ```
 
-## Quick Check
+## 快速檢查 (Quick Check)
 
-1. **Get issue details:**
+1. **獲取 issue 詳細資訊：**
    ```bash
    gh issue view $ARGUMENTS --json state,title,labels,body
    ```
-   If it fails: "❌ Cannot access issue #$ARGUMENTS. Check number or run: gh auth login"
+   如果失敗：「❌ 無法存取 issue #$ARGUMENTS。請檢查編號或運行：gh auth login」
 
-2. **Find local task file:**
-   - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming)
-   - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
-   - If not found: "❌ No local task for issue #$ARGUMENTS. This issue may have been created outside the PM system."
+2. **尋找本地任務檔案：**
+   -   首先檢查 `.claude/epics/*/$ARGUMENTS.md` 是否存在（新命名方式）
+   -   如果找不到，則在 frontmatter 中搜索包含 `github:.*issues/$ARGUMENTS` 的檔案（舊命名方式）
+   -   如果找不到：「❌ 找不到 issue #$ARGUMENTS 的本地任務。此 issue 可能是在 PM 系統之外創建的。」
 
-3. **Check for analysis:**
+3. **檢查分析：**
    ```bash
-   test -f .claude/epics/*/$ARGUMENTS-analysis.md || echo "❌ No analysis found for issue #$ARGUMENTS
+   test -f .claude/epics/*/$ARGUMENTS-analysis.md || echo "❌ 找不到 issue #$ARGUMENTS 的分析
    
-   Run: /pm:issue-analyze $ARGUMENTS first
-   Or: /pm:issue-start $ARGUMENTS --analyze to do both"
+   請先運行：/pm:issue-analyze $ARGUMENTS
+   或者：/pm:issue-start $ARGUMENTS --analyze 以同時進行兩者」
    ```
-   If no analysis exists and no --analyze flag, stop execution.
+   如果不存在分析且沒有 --analyze 旗標，則停止執行。
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Ensure Worktree Exists
+### 1. 確保 Worktree 存在
 
-Check if epic worktree exists:
+檢查 epic worktree 是否存在：
 ```bash
-# Find epic name from task file
+# 從任務檔案中尋找 epic 名稱
 epic_name={extracted_from_path}
 
-# Check worktree
+# 檢查 worktree
 if ! git worktree list | grep -q "epic-$epic_name"; then
-  echo "❌ No worktree for epic. Run: /pm:epic-start $epic_name"
+  echo "❌ 找不到 epic 的 worktree。請運行：/pm:epic-start $epic_name"
   exit 1
 fi
 ```
 
-### 2. Read Analysis
+### 2. 讀取分析
 
-Read `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`:
-- Parse parallel streams
-- Identify which can start immediately
-- Note dependencies between streams
+讀取 `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`：
+-   解析並行工作流
+-   識別哪些可以立即開始
+-   注意工作流之間的依賴關係
 
-### 3. Setup Progress Tracking
+### 3. 設定進度追蹤
 
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Create workspace structure:
+創建工作區結構：
 ```bash
 mkdir -p .claude/epics/{epic_name}/updates/$ARGUMENTS
 ```
 
-Update task file frontmatter `updated` field with current datetime.
+使用當前日期時間更新任務檔案 frontmatter 的 `updated` 欄位。
 
-### 4. Launch Parallel Agents
+### 4. 啟動並行代理
 
-For each stream that can start immediately:
+對於每個可以立即開始的工作流：
 
-Create `.claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md`:
+創建 `.claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md`：
 ```markdown
 ---
 issue: $ARGUMENTS
@@ -81,83 +81,83 @@ started: {current_datetime}
 status: in_progress
 ---
 
-# Stream {X}: {stream_name}
+# 工作流 {X}: {stream_name}
 
-## Scope
+## 範圍 (Scope)
 {stream_description}
 
-## Files
+## 檔案 (Files)
 {file_patterns}
 
-## Progress
-- Starting implementation
+## 進度 (Progress)
+- 正在開始實作
 ```
 
-Launch agent using Task tool:
+使用 Task 工具啟動代理：
 ```yaml
 Task:
-  description: "Issue #$ARGUMENTS Stream {X}"
+  description: "Issue #$ARGUMENTS 工作流 {X}"
   subagent_type: "{agent_type}"
   prompt: |
-    You are working on Issue #$ARGUMENTS in the epic worktree.
+    您正在 epic worktree 中處理 Issue #$ARGUMENTS。
     
-    Worktree location: ../epic-{epic_name}/
-    Your stream: {stream_name}
+    Worktree 位置：../epic-{epic_name}/
+    您的工作流：{stream_name}
     
-    Your scope:
-    - Files to modify: {file_patterns}
-    - Work to complete: {stream_description}
+    您的工作範圍：
+    - 要修改的檔案：{file_patterns}
+    - 要完成的工作：{stream_description}
     
-    Requirements:
-    1. Read full task from: .claude/epics/{epic_name}/{task_file}
-    2. Work ONLY in your assigned files
-    3. Commit frequently with format: "Issue #$ARGUMENTS: {specific change}"
-    4. Update progress in: .claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md
-    5. Follow coordination rules in /rules/agent-coordination.md
+    要求：
+    1. 從以下位置讀取完整任務：.claude/epics/{epic_name}/{task_file}
+    2. 僅在您被分配的檔案中工作
+    3. 使用以下格式頻繁提交："Issue #$ARGUMENTS: {specific change}"
+    4. 在以下位置更新進度：.claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md
+    5. 遵循 /rules/agent-coordination.md 中的協調規則
     
-    If you need to modify files outside your scope:
-    - Check if another stream owns them
-    - Wait if necessary
-    - Update your progress file with coordination notes
+    如果您需要修改超出您範圍的檔案：
+    - 檢查是否有另一個工作流擁有它們
+    - 如有必要，請等待
+    - 用協調筆記更新您的進度檔案
     
-    Complete your stream's work and mark as completed when done.
+    完成您工作流的工作，並在完成時標記為完成。
 ```
 
-### 5. GitHub Assignment
+### 5. GitHub 指派
 
 ```bash
-# Assign to self and mark in-progress
+# 指派給自己並標記為進行中
 gh issue edit $ARGUMENTS --add-assignee @me --add-label "in-progress"
 ```
 
-### 6. Output
+### 6. 輸出
 
 ```
-✅ Started parallel work on issue #$ARGUMENTS
+✅ 已開始對 issue #$ARGUMENTS 進行並行工作
 
 Epic: {epic_name}
 Worktree: ../epic-{epic_name}/
 
-Launching {count} parallel agents:
-  Stream A: {name} (Agent-1) ✓ Started
-  Stream B: {name} (Agent-2) ✓ Started
-  Stream C: {name} - Waiting (depends on A)
+正在啟動 {count} 個並行代理：
+  工作流 A: {name} (代理-1) ✓ 已啟動
+  工作流 B: {name} (代理-2) ✓ 已啟動
+  工作流 C: {name} - 等待中 (依賴於 A)
 
-Progress tracking:
+進度追蹤：
   .claude/epics/{epic_name}/updates/$ARGUMENTS/
 
-Monitor with: /pm:epic-status {epic_name}
-Sync updates: /pm:issue-sync $ARGUMENTS
+使用 /pm:epic-status {epic_name} 進行監控
+使用 /pm:issue-sync $ARGUMENTS 同步更新
 ```
 
-## Error Handling
+## 錯誤處理
 
-If any step fails, report clearly:
-- "❌ {What failed}: {How to fix}"
-- Continue with what's possible
-- Never leave partial state
+如果任何步驟失敗，請清楚地報告：
+- "❌ {什麼失敗了}: {如何修復}"
+- 繼續進行可能的部分
+- 絕不留下部分狀態
 
-## Important Notes
+## 重要筆記
 
-Follow `/rules/datetime.md` for timestamps.
-Keep it simple - trust that GitHub and file system work.
+-   遵循 `/rules/datetime.md` 處理時間戳。
+-   保持簡單——相信 GitHub 和檔案系統能正常工作。

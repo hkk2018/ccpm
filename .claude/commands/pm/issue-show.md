@@ -2,90 +2,90 @@
 allowed-tools: Bash, Read, LS
 ---
 
-# Issue Show
+# 顯示 Issue (Issue Show)
 
-Display issue and sub-issues with detailed information.
+顯示 issue 及其子 issue 的詳細資訊。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:issue-show <issue_number>
 ```
 
-## Instructions
+## 指示 (Instructions)
 
-You are displaying comprehensive information about a GitHub issue and related sub-issues for: **Issue #$ARGUMENTS**
+您正在為 **Issue #$ARGUMENTS** 顯示一個 GitHub issue 及其相關子 issue 的綜合資訊。
 
-### 1. Fetch Issue Data
-- Use `gh issue view #$ARGUMENTS` to get GitHub issue details
-- Look for local task file: first check `.claude/epics/*/$ARGUMENTS.md` (new naming)
-- If not found, search for file with `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
-- Check for related issues and sub-tasks
+### 1. 獲取 Issue 資料
+-   使用 `gh issue view #$ARGUMENTS` 獲取 GitHub issue 詳細資訊。
+-   尋找本地任務檔案：首先檢查 `.claude/epics/*/$ARGUMENTS.md`（新命名方式）。
+-   如果找不到，則在 frontmatter 中搜索包含 `github:.*issues/$ARGUMENTS` 的檔案（舊命名方式）。
+-   檢查相關的 issues 和子任務。
 
-### 2. Issue Overview
-Display issue header:
+### 2. Issue 概覽
+顯示 issue 標頭：
 ```
 🎫 Issue #$ARGUMENTS: {Issue Title}
-   Status: {open/closed}
-   Labels: {labels}
-   Assignee: {assignee}
-   Created: {creation_date}
-   Updated: {last_update}
+   狀態 (Status): {open/closed}
+   標籤 (Labels): {labels}
+   指派對象 (Assignee): {assignee}
+   創建時間 (Created): {creation_date}
+   更新時間 (Updated): {last_update}
    
-📝 Description:
+📝 描述 (Description):
 {issue_description}
 ```
 
-### 3. Local File Mapping
-If local task file exists:
+### 3. 本地檔案映射
+如果本地任務檔案存在：
 ```
-📁 Local Files:
-   Task file: .claude/epics/{epic_name}/{task_file}
-   Updates: .claude/epics/{epic_name}/updates/$ARGUMENTS/
-   Last local update: {timestamp}
-```
-
-### 4. Sub-Issues and Dependencies
-Show related issues:
-```
-🔗 Related Issues:
-   Parent Epic: #{epic_issue_number}
-   Dependencies: #{dep1}, #{dep2}
-   Blocking: #{blocked1}, #{blocked2}
-   Sub-tasks: #{sub1}, #{sub2}
+📁 本地檔案:
+   任務檔案: .claude/epics/{epic_name}/{task_file}
+   更新: .claude/epics/{epic_name}/updates/$ARGUMENTS/
+   上次本地更新: {timestamp}
 ```
 
-### 5. Recent Activity
-Display recent comments and updates:
+### 4. 子 Issues 和依賴項
+顯示相關的 issues：
 ```
-💬 Recent Activity:
+🔗 相關 Issues:
+   父 Epic: #{epic_issue_number}
+   依賴於 (Dependencies): #{dep1}, #{dep2}
+   阻擋 (Blocking): #{blocked1}, #{blocked2}
+   子任務 (Sub-tasks): #{sub1}, #{sub2}
+```
+
+### 5. 最近活動
+顯示最近的評論和更新：
+```
+💬 最近活動:
    {timestamp} - {author}: {comment_preview}
    {timestamp} - {author}: {comment_preview}
    
-   View full thread: gh issue view #$ARGUMENTS --comments
+   查看完整討論串: gh issue view #$ARGUMENTS --comments
 ```
 
-### 6. Progress Tracking
-If task file exists, show progress:
+### 6. 進度追蹤
+如果任務檔案存在，顯示進度：
 ```
-✅ Acceptance Criteria:
-   ✅ Criterion 1 (completed)
-   🔄 Criterion 2 (in progress)
-   ⏸️ Criterion 3 (blocked)
-   □ Criterion 4 (not started)
-```
-
-### 7. Quick Actions
-```
-🚀 Quick Actions:
-   Start work: /pm:issue-start $ARGUMENTS
-   Sync updates: /pm:issue-sync $ARGUMENTS
-   Add comment: gh issue comment #$ARGUMENTS --body "your comment"
-   View in browser: gh issue view #$ARGUMENTS --web
+✅ 驗收標準:
+   ✅ 標準 1 (已完成)
+   🔄 標準 2 (進行中)
+   ⏸️ 標準 3 (受阻)
+   □ 標準 4 (未開始)
 ```
 
-### 8. Error Handling
-- Handle invalid issue numbers gracefully
-- Check for network/authentication issues
-- Provide helpful error messages and alternatives
+### 7. 快速操作
+```
+🚀 快速操作:
+   開始工作: /pm:issue-start $ARGUMENTS
+   同步更新: /pm:issue-sync $ARGUMENTS
+   新增評論: gh issue comment #$ARGUMENTS --body "your comment"
+   在瀏覽器中查看: gh issue view #$ARGUMENTS --web
+```
 
-Provide comprehensive issue information to help developers understand context and current status for Issue #$ARGUMENTS.
+### 8. 錯誤處理
+-   優雅地處理無效的 issue 編號。
+-   檢查網路/認證問題。
+-   提供有幫助的錯誤訊息和替代方案。
+
+為開發者提供關於 Issue #$ARGUMENTS 的綜合 issue 資訊，以幫助他們了解上下文和當前狀態。

@@ -2,119 +2,119 @@
 allowed-tools: Task, Read, Edit, MultiEdit, Write, LS, Grep
 ---
 
-# CodeRabbit Review Handler
+# CodeRabbit 審查處理程序
 
-Process CodeRabbit review comments with context-aware discretion.
+以具備上下文感知能力的判斷力，處理 CodeRabbit 的審查評論。
 
-## Usage
+## 用法 (Usage)
 ```
 /code-rabbit
 ```
 
-Then paste one or more CodeRabbit comments.
+然後貼上一條或多條 CodeRabbit 評論。
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Initial Context
+### 1. 初始上下文 (Initial Context)
 
-Inform the user:
+告知使用者：
 ```
-I'll review the CodeRabbit comments with discretion, as CodeRabbit doesn't have access to the entire codebase and may not understand the full context.
+我會謹慎地審查 CodeRabbit 的評論，因為 CodeRabbit 無法存取整個程式碼庫，可能不了解完整的上下文。
 
-For each comment, I'll:
-- Evaluate if it's valid given our codebase context
-- Accept suggestions that improve code quality
-- Ignore suggestions that don't apply to our architecture
-- Explain my reasoning for accept/ignore decisions
+對於每條評論，我會：
+- 根據我們的程式碼庫上下文評估其是否有效。
+- 接受能改善程式碼品質的建議。
+- 忽略不適用於我們架構的建議。
+- 解釋我接受/忽略決定的原因。
 ```
 
-### 2. Process Comments
+### 2. 處理評論 (Process Comments)
 
-#### Single File Comments
-If all comments relate to one file:
-- Read the file for context
-- Evaluate each suggestion
-- Apply accepted changes in batch using MultiEdit
-- Report which suggestions were accepted/ignored and why
+#### 單一檔案評論 (Single File Comments)
+如果所有評論都與單一檔案相關：
+-   讀取該檔案以了解上下文。
+-   評估每條建議。
+-   使用 MultiEdit 批次應用已接受的變更。
+-   報告哪些建議被接受/忽略及其原因。
 
-#### Multiple File Comments
-If comments span multiple files:
+#### 多檔案評論 (Multiple File Comments)
+如果評論橫跨多個檔案：
 
-Launch parallel sub-agents using Task tool:
+使用 Task 工具啟動並行子代理：
 ```yaml
 Task:
-  description: "CodeRabbit fixes for {filename}"
+  description: "針對 {filename} 的 CodeRabbit 修復"
   subagent_type: "general-purpose"
   prompt: |
-    Review and apply CodeRabbit suggestions for {filename}.
+    審查並應用針對 {filename} 的 CodeRabbit 建議。
     
-    Comments to evaluate:
+    要評估的評論：
     {relevant_comments_for_this_file}
     
-    Instructions:
-    1. Read the file to understand context
-    2. For each suggestion:
-       - Evaluate validity given codebase patterns
-       - Accept if it improves quality/correctness
-       - Ignore if not applicable
-    3. Apply accepted changes using Edit/MultiEdit
-    4. Return summary:
-       - Accepted: {list with reasons}
-       - Ignored: {list with reasons}
-       - Changes made: {brief description}
+    指示：
+    1. 讀取檔案以了解上下文。
+    2. 對於每條建議：
+       - 根據程式碼庫的模式評估其有效性。
+       - 如果能改善品質/正確性，則接受。
+       - 如果不適用，則忽略。
+    3. 使用 Edit/MultiEdit 應用已接受的變更。
+    4. 返回摘要：
+       - 已接受 (Accepted): {附帶原因的列表}
+       - 已忽略 (Ignored): {附帶原因的列表}
+       - 已做的變更 (Changes made): {簡要描述}
     
-    Use discretion - CodeRabbit lacks full context.
+    請謹慎行事——CodeRabbit 缺乏完整的上下文。
 ```
 
-### 3. Consolidate Results
+### 3. 整合結果 (Consolidate Results)
 
-After all sub-agents complete:
+所有子代理完成後：
 ```
-📋 CodeRabbit Review Summary
+📋 CodeRabbit 審查摘要
 
-Files Processed: {count}
+已處理檔案數 (Files Processed): {count}
 
-Accepted Suggestions:
+已接受的建議 (Accepted Suggestions):
   {file}: {changes_made}
   
-Ignored Suggestions:
+已忽略的建議 (Ignored Suggestions):
   {file}: {reason_ignored}
 
-Overall: {X}/{Y} suggestions applied
+總體 (Overall): {X}/{Y} 條建議已應用
 ```
 
-### 4. Common Patterns to Ignore
+### 4. 常見的忽略模式 (Common Patterns to Ignore)
 
-- **Style preferences** that conflict with project conventions
-- **Generic best practices** that don't apply to our specific use case
-- **Performance optimizations** for code that isn't performance-critical
-- **Accessibility suggestions** for internal tools
-- **Security warnings** for already-validated patterns
-- **Import reorganization** that would break our structure
+-   與專案慣例衝突的**風格偏好**。
+-   不適用於我們特定用例的**通用最佳實踐**。
+-   針對非性能關鍵程式碼的**性能優化**。
+-   針對內部工具的**無障礙性建議**。
+-   針對已驗證模式的**安全警告**。
+-   會破壞我們結構的**導入重組**。
 
-### 5. Common Patterns to Accept
+### 5. 常見的接受模式 (Common Patterns to Accept)
 
-- **Actual bugs** (null checks, error handling)
-- **Security vulnerabilities** (unless false positive)
-- **Resource leaks** (unclosed connections, memory leaks)
-- **Type safety issues** (TypeScript/type hints)
-- **Logic errors** (off-by-one, incorrect conditions)
-- **Missing error handling** 
+-   **實際的錯誤**（空值檢查、錯誤處理）。
+-   **安全漏洞**（除非是誤報）。
+-   **資源洩漏**（未關閉的連線、記憶體洩漏）。
+-   **類型安全問題**（TypeScript/類型提示）。
+-   **邏輯錯誤**（差一錯誤、不正確的條件）。
+-   **缺少錯誤處理**。
 
-## Decision Framework
+## 決策框架 (Decision Framework)
 
-For each suggestion, consider:
-1. **Is it correct?** - Does the issue actually exist?
-2. **Is it relevant?** - Does it apply to our use case?
-3. **Is it beneficial?** - Will fixing it improve the code?
-4. **Is it safe?** - Could the change introduce problems?
+對於每條建議，請考量：
+1.  **它是否正確？** - 問題是否確實存在？
+2.  **它是否相關？** - 它是否適用於我們的用例？
+3.  **它是否有益？** - 修復它會改善程式碼嗎？
+4.  **它是否安全？** - 這個變更會引入問題嗎？
 
-Only apply if all answers are "yes" or the benefit clearly outweighs risks.
+只有當所有答案都是「是」，或者好處明顯大於風險時才應用。
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-- CodeRabbit is helpful but lacks context
-- Trust your understanding of the codebase over generic suggestions
-- Explain decisions briefly to maintain audit trail
-- Batch related changes for efficiency
-- Use parallel agents for multi-file reviews to save time
+-   CodeRabbit 很有幫助，但缺乏上下文。
+-   相信您對程式碼庫的理解勝過通用的建議。
+-   簡要解釋決定以保持審計追蹤。
+-   為提高效率，批次處理相關的變更。
+-   對多檔案審查使用並行代理以節省時間。

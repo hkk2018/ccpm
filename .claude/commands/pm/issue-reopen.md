@@ -2,69 +2,69 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Issue Reopen
+# 重新開啟 Issue (Issue Reopen)
 
-Reopen a closed issue.
+重新開啟一個已關閉的 issue。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:issue-reopen <issue_number> [reason]
 ```
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Find Local Task File
+### 1. 尋找本地任務檔案
 
-Search for task file with `github:.*issues/$ARGUMENTS` in frontmatter.
-If not found: "❌ No local task for issue #$ARGUMENTS"
+在 frontmatter 中搜索包含 `github:.*issues/$ARGUMENTS` 的任務檔案。
+如果找不到：「❌ 找不到 issue #$ARGUMENTS 的本地任務」
 
-### 2. Update Local Status
+### 2. 更新本地狀態
 
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Update task file frontmatter:
+更新任務檔案的 frontmatter：
 ```yaml
 status: open
 updated: {current_datetime}
 ```
 
-### 3. Reset Progress
+### 3. 重設進度
 
-If progress file exists:
-- Keep original started date
-- Reset completion to previous value or 0%
-- Add note about reopening with reason
+如果進度檔案存在：
+-   保留原始的開始日期
+-   將完成度重設為先前的值或 0%
+-   新增關於重新開啟原因的註記
 
-### 4. Reopen on GitHub
+### 4. 在 GitHub 上重新開啟
 
 ```bash
-# Reopen with comment
-echo "🔄 Reopening issue
+# 附上評論重新開啟
+echo "🔄 正在重新開啟 issue
 
-Reason: $ARGUMENTS
+原因: $ARGUMENTS
 
 ---
-Reopened at: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
+重新開啟於: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
 
-# Reopen the issue
+# 重新開啟 issue
 gh issue reopen $ARGUMENTS
 ```
 
-### 5. Update Epic Progress
+### 5. 更新 Epic 進度
 
-Recalculate epic progress with this task now open again.
+將此任務重新設為開啟後，重新計算 epic 進度。
 
-### 6. Output
+### 6. 輸出
 
 ```
-🔄 Reopened issue #$ARGUMENTS
-  Reason: {reason_if_provided}
-  Epic progress: {updated_progress}%
+🔄 已重新開啟 issue #$ARGUMENTS
+  原因: {reason_if_provided}
+  Epic 進度: {updated_progress}%
   
-Start work with: /pm:issue-start $ARGUMENTS
+使用 /pm:issue-start $ARGUMENTS 開始工作
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-Preserve work history in progress files.
-Don't delete previous progress, just reset status.
+-   在進度檔案中保留工作歷史。
+-   不要刪除先前的進度，只需重設狀態。

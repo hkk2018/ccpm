@@ -2,88 +2,88 @@
 allowed-tools: Read, LS
 ---
 
-# Epic Oneshot
+# Epic 一步到位 (Epic Oneshot)
 
-Decompose epic into tasks and sync to GitHub in one operation.
+在單一操作中將 epic 分解為任務並同步到 GitHub。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:epic-oneshot <feature_name>
 ```
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Validate Prerequisites
+### 1. 驗證先決條件
 
-Check that epic exists and hasn't been processed:
+檢查 epic 是否存在且尚未被處理：
 ```bash
-# Epic must exist
-test -f .claude/epics/$ARGUMENTS/epic.md || echo "❌ Epic not found. Run: /pm:prd-parse $ARGUMENTS"
+# Epic 必須存在
+test -f .claude/epics/$ARGUMENTS/epic.md || echo "❌ 找不到 Epic。請運行：/pm:prd-parse $ARGUMENTS"
 
-# Check for existing tasks
+# 檢查現有任務
 if ls .claude/epics/$ARGUMENTS/[0-9]*.md 2>/dev/null | grep -q .; then
-  echo "⚠️ Tasks already exist. This will create duplicates."
-  echo "Delete existing tasks or use /pm:epic-sync instead."
+  echo "⚠️ 任務已存在。這將會創建重複的任務。"
+  echo "請刪除現有任務或改用 /pm:epic-sync。"
   exit 1
 fi
 
-# Check if already synced
+# 檢查是否已同步
 if grep -q "github:" .claude/epics/$ARGUMENTS/epic.md; then
-  echo "⚠️ Epic already synced to GitHub."
-  echo "Use /pm:epic-sync to update."
+  echo "⚠️ Epic 已同步到 GitHub。"
+  echo "請使用 /pm:epic-sync 進行更新。"
   exit 1
 fi
 ```
 
-### 2. Execute Decompose
+### 2. 執行分解
 
-Simply run the decompose command:
+只需運行分解命令：
 ```
-Running: /pm:epic-decompose $ARGUMENTS
-```
-
-This will:
-- Read the epic
-- Create task files (using parallel agents if appropriate)
-- Update epic with task summary
-
-### 3. Execute Sync
-
-Immediately follow with sync:
-```
-Running: /pm:epic-sync $ARGUMENTS
+正在運行：/pm:epic-decompose $ARGUMENTS
 ```
 
-This will:
-- Create epic issue on GitHub
-- Create sub-issues (using parallel agents if appropriate)
-- Rename task files to issue IDs
-- Create worktree
+這將會：
+-   讀取 epic
+-   創建任務檔案（如果適用，使用並行代理）
+-   用任務摘要更新 epic
 
-### 4. Output
+### 3. 執行同步
+
+立即接著進行同步：
+```
+正在運行：/pm:epic-sync $ARGUMENTS
+```
+
+這將會：
+-   在 GitHub 上創建 epic issue
+-   創建子 issue（如果適用，使用並行代理）
+-   將任務檔案重命名為 issue ID
+-   創建 worktree
+
+### 4. 輸出
 
 ```
-🚀 Epic Oneshot Complete: $ARGUMENTS
+🚀 Epic 一步到位完成：$ARGUMENTS
 
-Step 1: Decomposition ✓
-  - Tasks created: {count}
+步驟 1：分解 ✓
+  - 已創建任務數：{count}
   
-Step 2: GitHub Sync ✓
+步驟 2：GitHub 同步 ✓
   - Epic: #{number}
-  - Sub-issues created: {count}
+  - 已創建子 issue 數：{count}
   - Worktree: ../epic-$ARGUMENTS
 
-Ready for development!
-  Start work: /pm:epic-start $ARGUMENTS
-  Or single task: /pm:issue-start {task_number}
+準備好進行開發！
+  開始工作：/pm:epic-start $ARGUMENTS
+  或單一任務：/pm:issue-start {task_number}
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-This is simply a convenience wrapper that runs:
+這只是一個方便的包裝器，它會運行：
 1. `/pm:epic-decompose` 
 2. `/pm:epic-sync`
 
-Both commands handle their own error checking, parallel execution, and validation. This command just orchestrates them in sequence.
+這兩個命令各自處理自己的錯誤檢查、並行執行和驗證。此命令只是按順序協調它們。
 
-Use this when you're confident the epic is ready and want to go from epic to GitHub issues in one step.
+當您確信 epic 已準備就緒，並希望一步從 epic 到 GitHub issues 時，請使用此命令。

@@ -2,8 +2,8 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# This is an ephemeral command. 
+# 這是一個臨時命令。
 
-Some complex prompts (with numerous @ references) may fail if entered directly into the prompt input. 
+某些複雜的提示（包含大量 @ 引用）如果直接輸入到提示輸入框中，可能會失敗。
 
-If that happens, write your prompt here and type in `/prompt` in the prompt command.
+如果發生這種情況，請在此處編寫您的提示，然後在提示命令中輸入 `/prompt`。

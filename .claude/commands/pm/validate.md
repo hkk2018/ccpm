@@ -2,10 +2,10 @@
 allowed-tools: Bash
 ---
 
-Run `bash .claude/scripts/pm/validate.sh` using a sub-agent and show me the complete output.
+使用子代理運行 `bash .claude/scripts/pm/validate.sh` 並向我顯示完整的輸出。
 
-- DO NOT truncate.
-- DO NOT collapse.
-- DO NOT abbreviate.
-- Show ALL lines in full.
-- DO NOT print any other comments.
+- 不要截斷。
+- 不要折疊。
+- 不要縮寫。
+- 完整顯示所有行。
+- 不要打印任何其他評論。

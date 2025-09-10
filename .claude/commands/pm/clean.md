@@ -2,101 +2,101 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Clean
+# 清理 (Clean)
 
-Clean up completed work and archive old epics.
+清理已完成的工作並封存舊的史詩任務 (epics)。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:clean [--dry-run]
 ```
 
-Options:
-- `--dry-run` - Show what would be cleaned without doing it
+選項:
+- `--dry-run` - 顯示將被清理的內容，但不實際執行。
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Identify Completed Epics
+### 1. 識別已完成的 Epics
 
-Find epics with:
-- `status: completed` in frontmatter
-- All tasks closed
-- Last update > 30 days ago
+尋找符合以下條件的 epics：
+-   frontmatter 中 `status: completed`
+-   所有任務都已關閉
+-   最後更新於 30 天前
 
-### 2. Identify Stale Work
+### 2. 識別過時的工作
 
-Find:
-- Progress files for closed issues
-- Update directories for completed work
-- Orphaned task files (epic deleted)
-- Empty directories
+尋找：
+-   已關閉 issue 的進度檔案
+-   已完成工作的更新目錄
+-   孤立的任務檔案（epic 已被刪除）
+-   空目錄
 
-### 3. Show Cleanup Plan
+### 3. 顯示清理計畫
 
 ```
-🧹 Cleanup Plan
+🧹 清理計畫
 
-Completed Epics to Archive:
-  {epic_name} - Completed {days} days ago
-  {epic_name} - Completed {days} days ago
+待封存的已完成 Epics：
+  {epic_name} - 完成於 {days} 天前
+  {epic_name} - 完成於 {days} 天前
   
-Stale Progress to Remove:
-  {count} progress files for closed issues
+待移除的過時進度：
+  {count} 個已關閉 issue 的進度檔案
   
-Empty Directories:
+空目錄：
   {list_of_empty_dirs}
   
-Space to Recover: ~{size}KB
+可恢復空間：約 {size}KB
 
-{If --dry-run}: This is a dry run. No changes made.
-{Otherwise}: Proceed with cleanup? (yes/no)
+{如果使用 --dry-run}: 這是模擬運行，不會做任何變更。
+{否則}: 是否繼續清理？(是/否)
 ```
 
-### 4. Execute Cleanup
+### 4. 執行清理
 
-If user confirms:
+如果使用者確認：
 
-**Archive Epics:**
+**封存 Epics：**
 ```bash
 mkdir -p .claude/epics/.archived
 mv .claude/epics/{completed_epic} .claude/epics/.archived/
 ```
 
-**Remove Stale Files:**
-- Delete progress files for closed issues > 30 days
-- Remove empty update directories
-- Clean up orphaned files
+**移除過時檔案：**
+-   刪除超過 30 天的已關閉 issue 的進度檔案。
+-   移除空的更新目錄。
+-   清理孤立的檔案。
 
-**Create Archive Log:**
-Create `.claude/epics/.archived/archive-log.md`:
+**建立封存日誌：**
+建立 `.claude/epics/.archived/archive-log.md`：
 ```markdown
-# Archive Log
+# 封存日誌
 
 ## {current_date}
-- Archived: {epic_name} (completed {date})
-- Removed: {count} stale progress files
-- Cleaned: {count} empty directories
+- 已封存：{epic_name} (完成於 {date})
+- 已移除：{count} 個過時的進度檔案
+- 已清理：{count} 個空目錄
 ```
 
-### 5. Output
+### 5. 輸出
 
 ```
-✅ Cleanup Complete
+✅ 清理完成
 
-Archived:
-  {count} completed epics
+已封存：
+  {count} 個已完成的 epics
   
-Removed:
-  {count} stale files
-  {count} empty directories
+已移除：
+  {count} 個過時的檔案
+  {count} 個空目錄
   
-Space recovered: {size}KB
+已恢復空間：{size}KB
 
-System is clean and organized.
+系統現已乾淨整潔。
 ```
 
-## Important Notes
+## 重要筆記 (Important Notes)
 
-Always offer --dry-run to preview changes.
-Never delete PRDs or incomplete work.
-Keep archive log for history.
+-   始終提供 `--dry-run` 以預覽變更。
+-   絕不刪除 PRD 或未完成的工作。
+-   保留封存日誌以供歷史查詢。

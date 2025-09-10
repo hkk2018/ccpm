@@ -2,118 +2,118 @@
 allowed-tools: Bash, Read, Write, LS, Task
 ---
 
-# Epic Start
+# 啟動 Epic (Epic Start)
 
-Launch parallel agents to work on epic tasks in a shared worktree.
+啟動並行代理，在共享的 worktree 中處理 epic 任務。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:epic-start <epic_name>
 ```
 
-## Quick Check
+## 快速檢查 (Quick Check)
 
-1. **Verify epic exists:**
+1. **驗證 epic 是否存在：**
    ```bash
-   test -f .claude/epics/$ARGUMENTS/epic.md || echo "❌ Epic not found. Run: /pm:prd-parse $ARGUMENTS"
+   test -f .claude/epics/$ARGUMENTS/epic.md || echo "❌ 找不到 Epic。請運行 /pm:prd-parse $ARGUMENTS"
    ```
 
-2. **Check GitHub sync:**
-   Look for `github:` field in epic frontmatter.
-   If missing: "❌ Epic not synced. Run: /pm:epic-sync $ARGUMENTS first"
+2. **檢查 GitHub 同步狀態：**
+   在 epic frontmatter 中尋找 `github:` 欄位。
+   如果缺失：「❌ Epic 尚未同步。請先運行 /pm:epic-sync $ARGUMENTS」
 
-3. **Check for worktree:**
+3. **檢查 worktree：**
    ```bash
    git worktree list | grep "epic-$ARGUMENTS"
    ```
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Create or Enter Worktree
+### 1. 創建或進入 Worktree
 
-Follow `/rules/worktree-operations.md`:
+遵循 `/rules/worktree-operations.md`：
 
 ```bash
-# If worktree doesn't exist, create it
+# 如果 worktree 不存在，則創建它
 if ! git worktree list | grep -q "epic-$ARGUMENTS"; then
   git checkout main
   git pull origin main
   git worktree add ../epic-$ARGUMENTS -b epic/$ARGUMENTS
-  echo "✅ Created worktree: ../epic-$ARGUMENTS"
+  echo "✅ 已創建 worktree: ../epic-$ARGUMENTS"
 else
-  echo "✅ Using existing worktree: ../epic-$ARGUMENTS"
+  echo "✅ 正在使用現有的 worktree: ../epic-$ARGUMENTS"
 fi
 ```
 
-### 2. Identify Ready Issues
+### 2. 識別就緒的 Issues
 
-Read all task files in `.claude/epics/$ARGUMENTS/`:
-- Parse frontmatter for `status`, `depends_on`, `parallel` fields
-- Check GitHub issue status if needed
-- Build dependency graph
+讀取 `.claude/epics/$ARGUMENTS/` 中的所有任務檔案：
+-   解析 frontmatter 中的 `status`, `depends_on`, `parallel` 欄位
+-   如果需要，檢查 GitHub issue 狀態
+-   建立依賴關係圖
 
-Categorize issues:
-- **Ready**: No unmet dependencies, not started
-- **Blocked**: Has unmet dependencies
-- **In Progress**: Already being worked on
-- **Complete**: Finished
+將 issues 分類：
+-   **就緒 (Ready)**：沒有未滿足的依賴項，尚未開始
+-   **受阻 (Blocked)**：有未滿足的依賴項
+-   **進行中 (In Progress)**：已在處理中
+-   **完成 (Complete)**：已結束
 
-### 3. Analyze Ready Issues
+### 3. 分析就緒的 Issues
 
-For each ready issue without analysis:
+對於每個尚未分析的就緒 issue：
 ```bash
-# Check for analysis
+# 檢查是否有分析
 if ! test -f .claude/epics/$ARGUMENTS/{issue}-analysis.md; then
-  echo "Analyzing issue #{issue}..."
-  # Run analysis (inline or via Task tool)
+  echo "正在分析 issue #{issue}..."
+  # 運行分析 (內聯或通過 Task 工具)
 fi
 ```
 
-### 4. Launch Parallel Agents
+### 4. 啟動並行代理
 
-For each ready issue with analysis:
+對於每個已分析的就緒 issue：
 
 ```markdown
-## Starting Issue #{issue}: {title}
+## 正在啟動 Issue #{issue}: {title}
 
-Reading analysis...
-Found {count} parallel streams:
-  - Stream A: {description} (Agent-{id})
-  - Stream B: {description} (Agent-{id})
+正在讀取分析...
+發現 {count} 個並行工作流：
+  - 工作流 A: {description} (代理-{id})
+  - 工作流 B: {description} (代理-{id})
 
-Launching agents in worktree: ../epic-$ARGUMENTS/
+正在 worktree 中啟動代理：../epic-$ARGUMENTS/
 ```
 
-Use Task tool to launch each stream:
+使用 Task 工具為每個工作流啟動代理：
 ```yaml
 Task:
-  description: "Issue #{issue} Stream {X}"
+  description: "Issue #{issue} 工作流 {X}"
   subagent_type: "{agent_type}"
   prompt: |
-    Working in worktree: ../epic-$ARGUMENTS/
+    在 worktree 中工作：../epic-$ARGUMENTS/
     Issue: #{issue} - {title}
-    Stream: {stream_name}
+    工作流 (Stream): {stream_name}
 
-    Your scope:
-    - Files: {file_patterns}
-    - Work: {stream_description}
+    您的工作範圍：
+    - 檔案 (Files): {file_patterns}
+    - 工作 (Work): {stream_description}
 
-    Read full requirements from:
+    從以下位置讀取完整需求：
     - .claude/epics/$ARGUMENTS/{task_file}
     - .claude/epics/$ARGUMENTS/{issue}-analysis.md
 
-    Follow coordination rules in /rules/agent-coordination.md
+    遵循 /rules/agent-coordination.md 中的協調規則
 
-    Commit frequently with message format:
+    使用以下格式頻繁提交：
     "Issue #{issue}: {specific change}"
 
-    Update progress in:
+    在以下位置更新進度：
     .claude/epics/$ARGUMENTS/updates/{issue}/stream-{X}.md
 ```
 
-### 5. Track Active Agents
+### 5. 追蹤活動的代理
 
-Create/update `.claude/epics/$ARGUMENTS/execution-status.md`:
+創建/更新 `.claude/epics/$ARGUMENTS/execution-status.md`：
 
 ```markdown
 ---
@@ -122,100 +122,100 @@ worktree: ../epic-$ARGUMENTS
 branch: epic/$ARGUMENTS
 ---
 
-# Execution Status
+# 執行狀態 (Execution Status)
 
-## Active Agents
-- Agent-1: Issue #1234 Stream A (Database) - Started {time}
-- Agent-2: Issue #1234 Stream B (API) - Started {time}
-- Agent-3: Issue #1235 Stream A (UI) - Started {time}
+## 活動的代理 (Active Agents)
+- 代理-1: Issue #1234 工作流 A (資料庫) - 已於 {time} 啟動
+- 代理-2: Issue #1234 工作流 B (API) - 已於 {time} 啟動
+- 代理-3: Issue #1235 工作流 A (UI) - 已於 {time} 啟動
 
-## Queued Issues
-- Issue #1236 - Waiting for #1234
-- Issue #1237 - Waiting for #1235
+## 排隊中的 Issues (Queued Issues)
+- Issue #1236 - 等待 #1234
+- Issue #1237 - 等待 #1235
 
-## Completed
-- {None yet}
+## 已完成 (Completed)
+- {尚無}
 ```
 
-### 6. Monitor and Coordinate
+### 6. 監控與協調
 
-Set up monitoring:
+設定監控：
 ```bash
 echo "
-Agents launched successfully!
+代理已成功啟動！
 
-Monitor progress:
+監控進度：
   /pm:epic-status $ARGUMENTS
 
-View worktree changes:
+查看 worktree 變更：
   cd ../epic-$ARGUMENTS && git status
 
-Stop all agents:
+停止所有代理：
   /pm:epic-stop $ARGUMENTS
 
-Merge when complete:
+完成後合併：
   /pm:epic-merge $ARGUMENTS
 "
 ```
 
-### 7. Handle Dependencies
+### 7. 處理依賴關係
 
-As agents complete streams:
-- Check if any blocked issues are now ready
-- Launch new agents for newly-ready work
-- Update execution-status.md
+當代理完成工作流時：
+-   檢查是否有任何受阻的 issue 現在已就緒
+-   為新就緒的工作啟動新的代理
+-   更新 execution-status.md
 
-## Output Format
+## 輸出格式
 
 ```
-🚀 Epic Execution Started: $ARGUMENTS
+🚀 Epic 執行已啟動: $ARGUMENTS
 
 Worktree: ../epic-$ARGUMENTS
-Branch: epic/$ARGUMENTS
+分支: epic/$ARGUMENTS
 
-Launching {total} agents across {issue_count} issues:
+正在為 {issue_count} 個 issues 啟動 {total} 個代理：
 
-Issue #1234: Database Schema
-  ├─ Stream A: Schema creation (Agent-1) ✓ Started
-  └─ Stream B: Migrations (Agent-2) ✓ Started
+Issue #1234: 資料庫結構 (Database Schema)
+  ├─ 工作流 A: 結構創建 (代理-1) ✓ 已啟動
+  └─ 工作流 B: 遷移 (代理-2) ✓ 已啟動
 
-Issue #1235: API Endpoints
-  ├─ Stream A: User endpoints (Agent-3) ✓ Started
-  ├─ Stream B: Post endpoints (Agent-4) ✓ Started
-  └─ Stream C: Tests (Agent-5) ⏸ Waiting for A & B
+Issue #1235: API 端點 (API Endpoints)
+  ├─ 工作流 A: 使用者端點 (代理-3) ✓ 已啟動
+  ├─ 工作流 B: 貼文端點 (代理-4) ✓ 已啟動
+  └─ 工作流 C: 測試 (代理-5) ⏸ 等待 A & B
 
-Blocked Issues (2):
-  - #1236: UI Components (depends on #1234)
-  - #1237: Integration (depends on #1235, #1236)
+受阻的 Issues (2):
+  - #1236: UI 元件 (依賴於 #1234)
+  - #1237: 整合 (依賴於 #1235, #1236)
 
-Monitor with: /pm:epic-status $ARGUMENTS
+使用 /pm:epic-status $ARGUMENTS 進行監控
 ```
 
-## Error Handling
+## 錯誤處理
 
-If agent launch fails:
+如果代理啟動失敗：
 ```
-❌ Failed to start Agent-{id}
+❌ 啟動代理-{id} 失敗
   Issue: #{issue}
-  Stream: {stream}
-  Error: {reason}
+  工作流: {stream}
+  錯誤: {reason}
 
-Continue with other agents? (yes/no)
+是否繼續其他代理？(是/否)
 ```
 
-If worktree creation fails:
+如果 worktree 創建失敗：
 ```
-❌ Cannot create worktree
-  {git error message}
+❌ 無法創建 worktree
+  {git 錯誤訊息}
 
-Try: git worktree prune
-Or: Check existing worktrees with: git worktree list
+嘗試：git worktree prune
+或：使用 git worktree list 檢查現有的 worktree
 ```
 
-## Important Notes
+## 重要筆記
 
-- Follow `/rules/worktree-operations.md` for git operations
-- Follow `/rules/agent-coordination.md` for parallel work
-- Agents work in the SAME worktree (not separate ones)
-- Maximum parallel agents should be reasonable (e.g., 5-10)
-- Monitor system resources if launching many agents
+-   遵循 `/rules/worktree-operations.md` 進行 git 操作
+-   遵循 `/rules/agent-coordination.md` 進行並行工作
+-   代理在**同一個** worktree 中工作（不是分開的）
+-   並行代理的最大數量應合理（例如，5-10）
+-   如果啟動許多代理，請監控系統資源

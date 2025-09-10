@@ -2,151 +2,151 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Issue Sync
+# 同步 Issue (Issue Sync)
 
-Push local updates as GitHub issue comments for transparent audit trail.
+將本地更新作為 GitHub issue 評論推送，以提供透明的審計追蹤。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:issue-sync <issue_number>
 ```
 
-## Required Rules
+## 必要規則
 
-**IMPORTANT:** Before executing this command, read and follow:
-- `.claude/rules/datetime.md` - For getting real current date/time
+**重要：** 在執行此命令之前，請閱讀並遵守：
+- `.claude/rules/datetime.md` - 用於獲取真實的當前日期/時間
 
-## Preflight Checklist
+## 飛行前檢查清單
 
-Before proceeding, complete these validation steps.
-Do not bother the user with preflight checks progress ("I'm not going to ..."). Just do them and move on.
+在繼續之前，請完成這些驗證步驟。
+不要用飛行前檢查的進度來打擾使用者（例如說「我將不會...」）。只需執行它們然後繼續。
 
-0. **Repository Protection Check:**
-   Follow `/rules/github-operations.md` - check remote origin:
+0. **儲存庫保護檢查：**
+   遵循 `/rules/github-operations.md` - 檢查遠端 origin：
    ```bash
    remote_url=$(git remote get-url origin 2>/dev/null || echo "")
    if [[ "$remote_url" == *"automazeio/ccpm"* ]]; then
-     echo "❌ ERROR: Cannot sync to CCPM template repository!"
-     echo "Update your remote: git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+     echo "❌ 錯誤：無法同步到 CCPM 樣板儲存庫！"
+     echo "更新您的遠端：git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_REPO.git"
      exit 1
    fi
    ```
 
-1. **GitHub Authentication:**
-   - Run: `gh auth status`
-   - If not authenticated, tell user: "❌ GitHub CLI not authenticated. Run: gh auth login"
+1. **GitHub 認證：**
+   - 運行：`gh auth status`
+   - 如果未認證，告知使用者：「❌ GitHub CLI 未認證。請運行：gh auth login」
 
-2. **Issue Validation:**
-   - Run: `gh issue view $ARGUMENTS --json state`
-   - If issue doesn't exist, tell user: "❌ Issue #$ARGUMENTS not found"
-   - If issue is closed and completion < 100%, warn: "⚠️ Issue is closed but work incomplete"
+2. **Issue 驗證：**
+   - 運行：`gh issue view $ARGUMENTS --json state`
+   - 如果 issue 不存在，告知使用者：「❌ 找不到 Issue #$ARGUMENTS」
+   - 如果 issue 已關閉但完成度 < 100%，警告：「⚠️ Issue 已關閉但工作未完成」
 
-3. **Local Updates Check:**
-   - Check if `.claude/epics/*/updates/$ARGUMENTS/` directory exists
-   - If not found, tell user: "❌ No local updates found for issue #$ARGUMENTS. Run: /pm:issue-start $ARGUMENTS"
-   - Check if progress.md exists
-   - If not, tell user: "❌ No progress tracking found. Initialize with: /pm:issue-start $ARGUMENTS"
+3. **本地更新檢查：**
+   - 檢查 `.claude/epics/*/updates/$ARGUMENTS/` 目錄是否存在
+   - 如果找不到，告知使用者：「❌ 找不到 issue #$ARGUMENTS 的本地更新。請運行：/pm:issue-start $ARGUMENTS」
+   - 檢查 progress.md 是否存在
+   - 如果不存在，告知使用者：「❌ 找不到進度追蹤。請使用 /pm:issue-start $ARGUMENTS 進行初始化」
 
-4. **Check Last Sync:**
-   - Read `last_sync` from progress.md frontmatter
-   - If synced recently (< 5 minutes), ask: "⚠️ Recently synced. Force sync anyway? (yes/no)"
-   - Calculate what's new since last sync
+4. **檢查上次同步：**
+   - 從 progress.md frontmatter 讀取 `last_sync`
+   - 如果最近同步過（< 5 分鐘），詢問：「⚠️ 最近已同步。是否仍要強制同步？(是/否)」
+   - 計算自上次同步以來的新內容
 
-5. **Verify Changes:**
-   - Check if there are actual updates to sync
-   - If no changes, tell user: "ℹ️ No new updates to sync since {last_sync}"
-   - Exit gracefully if nothing to sync
+5. **驗證變更：**
+   - 檢查是否有實際的更新需要同步
+   - 如果沒有變更，告知使用者：「ℹ️ 自 {last_sync} 以來沒有新的更新需要同步」
+   - 如果無內容可同步，則優雅地退出
 
-## Instructions
+## 指示 (Instructions)
 
-You are synchronizing local development progress to GitHub as issue comments for: **Issue #$ARGUMENTS**
+您正在為 **Issue #$ARGUMENTS** 將本地開發進度同步到 GitHub 作為 issue 評論。
 
-### 1. Gather Local Updates
-Collect all local updates for the issue:
-- Read from `.claude/epics/{epic_name}/updates/$ARGUMENTS/`
-- Check for new content in:
-  - `progress.md` - Development progress
-  - `notes.md` - Technical notes and decisions
-  - `commits.md` - Recent commits and changes
-  - Any other update files
+### 1. 收集本地更新
+收集該 issue 的所有本地更新：
+- 從 `.claude/epics/{epic_name}/updates/$ARGUMENTS/` 讀取
+- 檢查以下檔案中的新內容：
+  - `progress.md` - 開發進度
+  - `notes.md` - 技術筆記和決策
+  - `commits.md` - 最近的提交和變更
+  - 任何其他更新檔案
 
-### 2. Update Progress Tracking Frontmatter
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+### 2. 更新進度追蹤的 Frontmatter
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Update the progress.md file frontmatter:
+更新 progress.md 檔案的 frontmatter：
 ```yaml
 ---
 issue: $ARGUMENTS
-started: [preserve existing date]
-last_sync: [Use REAL datetime from command above]
-completion: [calculated percentage 0-100%]
+started: [保留現有日期]
+last_sync: [使用上面命令的真實日期時間]
+completion: [計算出的百分比 0-100%]
 ---
 ```
 
-### 3. Determine What's New
-Compare against previous sync to identify new content:
-- Look for sync timestamp markers
-- Identify new sections or updates
-- Gather only incremental changes since last sync
+### 3. 確定新增內容
+與上次同步比較以識別新內容：
+- 尋找同步時間戳標記
+- 識別新的區塊或更新
+- 僅收集自上次同步以來的增量變更
 
-### 4. Format Update Comment
-Create comprehensive update comment:
+### 4. 格式化更新評論
+創建全面的更新評論：
 
 ```markdown
-## 🔄 Progress Update - {current_date}
+## 🔄 進度更新 - {current_date}
 
-### ✅ Completed Work
+### ✅ 已完成的工作
 {list_completed_items}
 
-### 🔄 In Progress
+### 🔄 進行中
 {current_work_items}
 
-### 📝 Technical Notes
+### 📝 技術筆記
 {key_technical_decisions}
 
-### 📊 Acceptance Criteria Status
+### 📊 驗收標準狀態
 - ✅ {completed_criterion}
 - 🔄 {in_progress_criterion}
 - ⏸️ {blocked_criterion}
 - □ {pending_criterion}
 
-### 🚀 Next Steps
+### 🚀 下一步
 {planned_next_actions}
 
-### ⚠️ Blockers
+### ⚠️ 阻礙
 {any_current_blockers}
 
-### 💻 Recent Commits
+### 💻 最近的提交
 {commit_summaries}
 
 ---
-*Progress: {completion}% | Synced from local updates at {timestamp}*
+*進度: {completion}% | 於 {timestamp} 從本地更新同步*
 ```
 
-### 5. Post to GitHub
-Use GitHub CLI to add comment:
+### 5. 發佈到 GitHub
+使用 GitHub CLI 新增評論：
 ```bash
 gh issue comment #$ARGUMENTS --body-file {temp_comment_file}
 ```
 
-### 6. Update Local Task File
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+### 6. 更新本地任務檔案
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Update the task file frontmatter with sync information:
+使用同步資訊更新任務檔案的 frontmatter：
 ```yaml
 ---
 name: [Task Title]
 status: open
-created: [preserve existing date]
-updated: [Use REAL datetime from command above]
+created: [保留現有日期]
+updated: [使用上面命令的真實日期時間]
 github: https://github.com/{org}/{repo}/issues/$ARGUMENTS
 ---
 ```
 
-### 7. Handle Completion
-If task is complete, update all relevant frontmatter:
+### 7. 處理完成情況
+如果任務已完成，更新所有相關的 frontmatter：
 
-**Task file frontmatter**:
+**任務檔案 frontmatter**：
 ```yaml
 ---
 name: [Task Title]
@@ -157,7 +157,7 @@ github: https://github.com/{org}/{repo}/issues/$ARGUMENTS
 ---
 ```
 
-**Progress file frontmatter**:
+**進度檔案 frontmatter**：
 ```yaml
 ---
 issue: $ARGUMENTS
@@ -167,126 +167,126 @@ completion: 100%
 ---
 ```
 
-**Epic progress update**: Recalculate epic progress based on completed tasks and update epic frontmatter:
+**Epic 進度更新**：根據已完成的任務重新計算 epic 進度，並更新 epic frontmatter：
 ```yaml
 ---
 name: [Epic Name]
 status: in-progress
 created: [existing date]
-progress: [calculated percentage based on completed tasks]%
+progress: [根據已完成任務計算的百分比]%
 prd: [existing path]
 github: [existing URL]
 ---
 ```
 
-### 8. Completion Comment
-If task is complete:
+### 8. 完成評論
+如果任務已完成：
 ```markdown
-## ✅ Task Completed - {current_date}
+## ✅ 任務完成 - {current_date}
 
-### 🎯 All Acceptance Criteria Met
+### 🎯 所有驗收標準均已滿足
 - ✅ {criterion_1}
 - ✅ {criterion_2}
 - ✅ {criterion_3}
 
-### 📦 Deliverables
+### 📦 可交付成果
 - {deliverable_1}
 - {deliverable_2}
 
-### 🧪 Testing
-- Unit tests: ✅ Passing
-- Integration tests: ✅ Passing
-- Manual testing: ✅ Complete
+### 🧪 測試
+- 單元測試：✅ 通過
+- 整合測試：✅ 通過
+- 手動測試：✅ 完成
 
-### 📚 Documentation
-- Code documentation: ✅ Updated
-- README updates: ✅ Complete
+### 📚 文件
+- 程式碼文件：✅ 已更新
+- README 更新：✅ 完成
 
-This task is ready for review and can be closed.
+此任務已準備好進行審查並可關閉。
 
 ---
-*Task completed: 100% | Synced at {timestamp}*
+*任務完成: 100% | 於 {timestamp} 同步*
 ```
 
-### 9. Output Summary
+### 9. 輸出摘要
 ```
-☁️ Synced updates to GitHub Issue #$ARGUMENTS
+☁️ 已將更新同步到 GitHub Issue #$ARGUMENTS
 
-📝 Update summary:
-   Progress items: {progress_count}
-   Technical notes: {notes_count}
-   Commits referenced: {commit_count}
+📝 更新摘要：
+   進度項目：{progress_count}
+   技術筆記：{notes_count}
+   引用的提交數：{commit_count}
 
-📊 Current status:
-   Task completion: {task_completion}%
-   Epic progress: {epic_progress}%
-   Completed criteria: {completed}/{total}
+📊 當前狀態：
+   任務完成度：{task_completion}%
+   Epic 進度：{epic_progress}%
+   已完成標準：{completed}/{total}
 
-🔗 View update: gh issue view #$ARGUMENTS --comments
+🔗 查看更新：gh issue view #$ARGUMENTS --comments
 ```
 
-### 10. Frontmatter Maintenance
-- Always update task file frontmatter with current timestamp
-- Track completion percentages in progress files
-- Update epic progress when tasks complete
-- Maintain sync timestamps for audit trail
+### 10. Frontmatter 維護
+- 始終使用當前時間戳更新任務檔案的 frontmatter
+- 在進度檔案中追蹤完成百分比
+- 當任務完成時更新 epic 進度
+- 維護同步時間戳以供審計追蹤
 
-### 11. Incremental Sync Detection
+### 11. 增量同步檢測
 
-**Prevent Duplicate Comments:**
-1. Add sync markers to local files after each sync:
+**防止重複評論：**
+1. 每次同步後在本地檔案中新增同步標記：
    ```markdown
    <!-- SYNCED: 2024-01-15T10:30:00Z -->
    ```
-2. Only sync content added after the last marker
-3. If no new content, skip sync with message: "No updates since last sync"
+2. 僅同步最後一個標記後新增的內容
+3. 如果沒有新內容，則跳過同步並顯示訊息：「自上次同步以來無更新」
 
-### 12. Comment Size Management
+### 12. 評論大小管理
 
-**Handle GitHub's Comment Limits:**
-- Max comment size: 65,536 characters
-- If update exceeds limit:
-  1. Split into multiple comments
-  2. Or summarize with link to full details
-  3. Warn user: "⚠️ Update truncated due to size. Full details in local files."
+**處理 GitHub 的評論限制：**
+- 最大評論大小：65,536 個字元
+- 如果更新超出限制：
+  1. 分割成多條評論
+  2. 或總結並附上完整詳細資訊的連結
+  3. 警告使用者：「⚠️ 由於大小限制，更新被截斷。完整詳細資訊在本地檔案中。」
 
-### 13. Error Handling
+### 13. 錯誤處理
 
-**Common Issues and Recovery:**
+**常見問題與恢復：**
 
-1. **Network Error:**
-   - Message: "❌ Failed to post comment: network error"
-   - Solution: "Check internet connection and retry"
-   - Keep local updates intact for retry
+1. **網路錯誤：**
+   - 訊息：「❌ 發佈評論失敗：網路錯誤」
+   - 解決方案：「請檢查網路連線並重試」
+   - 保持本地更新完整以便重試
 
-2. **Rate Limit:**
-   - Message: "❌ GitHub rate limit exceeded"
-   - Solution: "Wait {minutes} minutes or use different token"
-   - Save comment locally for later sync
+2. **速率限制：**
+   - 訊息：「❌ 超出 GitHub 速率限制」
+   - 解決方案：「請等待 {minutes} 分鐘或使用不同的 token」
+   - 將評論保存在本地以便稍後同步
 
-3. **Permission Denied:**
-   - Message: "❌ Cannot comment on issue (permission denied)"
-   - Solution: "Check repository access permissions"
+3. **權限被拒絕：**
+   - 訊息：「❌ 無法在 issue 上評論（權限被拒絕）」
+   - 解決方案：「請檢查儲存庫存取權限」
 
-4. **Issue Locked:**
-   - Message: "⚠️ Issue is locked for comments"
-   - Solution: "Contact repository admin to unlock"
+4. **Issue 已鎖定：**
+   - 訊息：「⚠️ Issue 已被鎖定，無法評論」
+   - 解決方案：「請聯繫儲存庫管理員解鎖」
 
-### 14. Epic Progress Calculation
+### 14. Epic 進度計算
 
-When updating epic progress:
-1. Count total tasks in epic directory
-2. Count tasks with `status: closed` in frontmatter
-3. Calculate: `progress = (closed_tasks / total_tasks) * 100`
-4. Round to nearest integer
-5. Update epic frontmatter only if percentage changed
+更新 epic 進度時：
+1. 計算 epic 目錄中的總任務數
+2. 計算 frontmatter 中 `status: closed` 的任務數
+3. 計算：`progress = (closed_tasks / total_tasks) * 100`
+4. 四捨五入到最接近的整數
+5. 僅在百分比變更時更新 epic frontmatter
 
-### 15. Post-Sync Validation
+### 15. 同步後驗證
 
-After successful sync:
-- [ ] Verify comment posted on GitHub
-- [ ] Confirm frontmatter updated with sync timestamp
-- [ ] Check epic progress updated if task completed
-- [ ] Validate no data corruption in local files
+成功同步後：
+- [ ] 驗證評論已發佈到 GitHub
+- [ ] 確認 frontmatter 已用同步時間戳更新
+- [ ] 如果任務完成，檢查 epic 進度是否已更新
+- [ ] 驗證本地檔案無資料損壞
 
-This creates a transparent audit trail of development progress that stakeholders can follow in real-time for Issue #$ARGUMENTS, while maintaining accurate frontmatter across all project files.
+這為利害關係人創建了一個透明的開發進度審計追蹤，他們可以即時關注 Issue #$ARGUMENTS 的進展，同時在所有專案檔案中保持準確的 frontmatter。

@@ -2,210 +2,210 @@
 allowed-tools: Bash, Read, Write
 ---
 
-# Epic Merge
+# 合併 Epic (Epic Merge)
 
-Merge completed epic from worktree back to main branch.
+將已完成的 epic 從 worktree 合併回主分支。
 
-## Usage
+## 用法 (Usage)
 ```
 /pm:epic-merge <epic_name>
 ```
 
-## Quick Check
+## 快速檢查 (Quick Check)
 
-1. **Verify worktree exists:**
+1. **驗證 worktree 是否存在：**
    ```bash
-   git worktree list | grep "epic-$ARGUMENTS" || echo "❌ No worktree for epic: $ARGUMENTS"
+   git worktree list | grep "epic-$ARGUMENTS" || echo "❌ 找不到 epic 的 worktree：$ARGUMENTS"
    ```
 
-2. **Check for active agents:**
-   Read `.claude/epics/$ARGUMENTS/execution-status.md`
-   If active agents exist: "⚠️ Active agents detected. Stop them first with: /pm:epic-stop $ARGUMENTS"
+2. **檢查是否有活動的代理：**
+   讀取 `.claude/epics/$ARGUMENTS/execution-status.md`
+   如果存在活動的代理：「⚠️ 偵測到活動的代理。請先使用 /pm:epic-stop $ARGUMENTS 停止它們」
 
-## Instructions
+## 指示 (Instructions)
 
-### 1. Pre-Merge Validation
+### 1. 合併前驗證
 
-Navigate to worktree and check status:
+導航到 worktree 並檢查狀態：
 ```bash
 cd ../epic-$ARGUMENTS
 
-# Check for uncommitted changes
+# 檢查未提交的變更
 if [[ $(git status --porcelain) ]]; then
-  echo "⚠️ Uncommitted changes in worktree:"
+  echo "⚠️ worktree 中有未提交的變更："
   git status --short
-  echo "Commit or stash changes before merging"
+  echo "請在合併前提交或儲藏變更"
   exit 1
 fi
 
-# Check branch status
+# 檢查分支狀態
 git fetch origin
 git status -sb
 ```
 
-### 2. Run Tests (Optional but Recommended)
+### 2. 運行測試 (選擇性但建議)
 
 ```bash
-# Look for test commands
+# 尋找測試命令
 if [ -f package.json ]; then
-  npm test || echo "⚠️ Tests failed. Continue anyway? (yes/no)"
+  npm test || echo "⚠️ 測試失敗。是否仍要繼續？(是/否)"
 elif [ -f Makefile ]; then
-  make test || echo "⚠️ Tests failed. Continue anyway? (yes/no)"
+  make test || echo "⚠️ 測試失敗。是否仍要繼續？(是/否)"
 fi
 ```
 
-### 3. Update Epic Documentation
+### 3. 更新 Epic 文件
 
-Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+獲取當前日期時間：`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Update `.claude/epics/$ARGUMENTS/epic.md`:
-- Set status to "completed"
-- Update completion date
-- Add final summary
+更新 `.claude/epics/$ARGUMENTS/epic.md`：
+-   將狀態設為 "completed"
+-   更新完成日期
+-   新增最終摘要
 
-### 4. Attempt Merge
+### 4. 嘗試合併
 
 ```bash
-# Return to main repository
+# 返回主儲存庫
 cd {main-repo-path}
 
-# Ensure main is up to date
+# 確保 main 是最新的
 git checkout main
 git pull origin main
 
-# Attempt merge
-echo "Merging epic/$ARGUMENTS to main..."
-git merge epic/$ARGUMENTS --no-ff -m "Merge epic: $ARGUMENTS
+# 嘗試合併
+echo "正在將 epic/$ARGUMENTS 合併到 main..."
+git merge epic/$ARGUMENTS --no-ff -m "合併 epic: $ARGUMENTS
 
-Completed features:
+已完成的功能：
 $(cd .claude/epics/$ARGUMENTS && ls *.md | grep -E '^[0-9]+' | while read f; do
   echo "- $(grep '^name:' $f | cut -d: -f2)"
 done)
 
-Closes epic #$(grep 'github:' .claude/epics/$ARGUMENTS/epic.md | grep -oE '#[0-9]+')"
+關閉 epic #$(grep 'github:' .claude/epics/$ARGUMENTS/epic.md | grep -oE '#[0-9]+')"
 ```
 
-### 5. Handle Merge Conflicts
+### 5. 處理合併衝突
 
-If merge fails with conflicts:
+如果合併因衝突而失敗：
 ```bash
-# Check conflict status
+# 檢查衝突狀態
 git status
 
 echo "
-❌ Merge conflicts detected!
+❌ 偵測到合併衝突！
 
-Conflicts in:
+衝突檔案：
 $(git diff --name-only --diff-filter=U)
 
-Options:
-1. Resolve manually:
-   - Edit conflicted files
+選項：
+1. 手動解決：
+   - 編輯衝突的檔案
    - git add {files}
    - git commit
    
-2. Abort merge:
+2. 中止合併：
    git merge --abort
    
-3. Get help:
+3. 尋求幫助：
    /pm:epic-resolve $ARGUMENTS
 
-Worktree preserved at: ../epic-$ARGUMENTS
+Worktree 保留在：../epic-$ARGUMENTS
 "
 exit 1
 ```
 
-### 6. Post-Merge Cleanup
+### 6. 合併後清理
 
-If merge succeeds:
+如果合併成功：
 ```bash
-# Push to remote
+# 推送到遠端
 git push origin main
 
-# Clean up worktree
+# 清理 worktree
 git worktree remove ../epic-$ARGUMENTS
-echo "✅ Worktree removed: ../epic-$ARGUMENTS"
+echo "✅ 已移除 Worktree: ../epic-$ARGUMENTS"
 
-# Delete branch
+# 刪除分支
 git branch -d epic/$ARGUMENTS
 git push origin --delete epic/$ARGUMENTS 2>/dev/null || true
 
-# Archive epic locally
+# 本地封存 epic
 mkdir -p .claude/epics/archived/
 mv .claude/epics/$ARGUMENTS .claude/epics/archived/
-echo "✅ Epic archived: .claude/epics/archived/$ARGUMENTS"
+echo "✅ 已封存 Epic: .claude/epics/archived/$ARGUMENTS"
 ```
 
-### 7. Update GitHub Issues
+### 7. 更新 GitHub Issues
 
-Close related issues:
+關閉相關的 issue：
 ```bash
-# Get issue numbers from epic
+# 從 epic 獲取 issue 編號
 epic_issue=$(grep 'github:' .claude/epics/archived/$ARGUMENTS/epic.md | grep -oE '[0-9]+$')
 
-# Close epic issue
-gh issue close $epic_issue -c "Epic completed and merged to main"
+# 關閉 epic issue
+gh issue close $epic_issue -c "Epic 已完成並合併到 main"
 
-# Close task issues
+# 關閉 task issues
 for task_file in .claude/epics/archived/$ARGUMENTS/[0-9]*.md; do
   issue_num=$(grep 'github:' $task_file | grep -oE '[0-9]+$')
   if [ ! -z "$issue_num" ]; then
-    gh issue close $issue_num -c "Completed in epic merge"
+    gh issue close $issue_num -c "在 epic 合併中完成"
   fi
 done
 ```
 
-### 8. Final Output
+### 8. 最終輸出
 
 ```
-✅ Epic Merged Successfully: $ARGUMENTS
+✅ Epic 成功合併: $ARGUMENTS
 
-Summary:
-  Branch: epic/$ARGUMENTS → main
-  Commits merged: {count}
-  Files changed: {count}
-  Issues closed: {count}
+摘要：
+  分支：epic/$ARGUMENTS → main
+  合併的提交數：{count}
+  變更的檔案數：{count}
+  關閉的 issue 數：{count}
   
-Cleanup completed:
-  ✓ Worktree removed
-  ✓ Branch deleted
-  ✓ Epic archived
-  ✓ GitHub issues closed
+清理完成：
+  ✓ 已移除 Worktree
+  ✓ 已刪除分支
+  ✓ 已封存 Epic
+  ✓ 已關閉 GitHub issues
   
-Next steps:
-  - Deploy changes if needed
-  - Start new epic: /pm:prd-new {feature}
-  - View completed work: git log --oneline -20
+下一步：
+  - 如果需要，部署變更
+  - 開始新的 epic: /pm:prd-new {feature}
+  - 查看已完成的工作: git log --oneline -20
 ```
 
-## Conflict Resolution Help
+## 衝突解決幫助
 
-If conflicts need resolution:
+如果需要解決衝突：
 ```
-The epic branch has conflicts with main.
+epic 分支與 main 有衝突。
 
-This typically happens when:
-- Main has changed since epic started
-- Multiple epics modified same files
-- Dependencies were updated
+這通常發生在：
+- epic 開始後 main 已有變更
+- 多個 epics 修改了相同的檔案
+- 依賴項已更新
 
-To resolve:
-1. Open conflicted files
-2. Look for <<<<<<< markers
-3. Choose correct version or combine
-4. Remove conflict markers
+要解決：
+1. 開啟衝突的檔案
+2. 尋找 <<<<<<< 標記
+3. 選擇正確的版本或合併
+4. 移除衝突標記
 5. git add {resolved files}
 6. git commit
 7. git push
 
-Or abort and try later:
+或中止並稍後再試：
   git merge --abort
 ```
 
-## Important Notes
+## 重要筆記
 
-- Always check for uncommitted changes first
-- Run tests before merging when possible
-- Use --no-ff to preserve epic history
-- Archive epic data instead of deleting
-- Close GitHub issues to maintain sync
+-   務必先檢查未提交的變更。
+-   盡可能在合併前運行測試。
+-   使用 --no-ff 以保留 epic 的歷史記錄。
+-   封存 epic 資料而不是刪除。
+-   關閉 GitHub issues 以保持同步。
